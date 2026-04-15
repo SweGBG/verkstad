@@ -3,7 +3,7 @@ import "./globals.css";
 import Navbar from "./components/navbar";
 
 export const metadata: Metadata = {
-  title: "NordDäck — Däckverkstad Göteborg",
+  title: "Iron Däck — Däckverkstad Göteborg",
   description: "Din lokala däckverkstad i Göteborg. Vi byter, lagrar och balanserar däck.",
 };
 

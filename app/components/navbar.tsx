@@ -74,7 +74,7 @@ export default function Navbar() {
         <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
           <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(220,50,30,0.15)", border: "1px solid rgba(220,50,30,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>🛞</div>
           <span style={{ color: "#fff", fontSize: "18px", fontWeight: 800, letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif", textTransform: "uppercase" }}>
-            NordDäck<span style={{ color: "rgba(220,50,30,0.9)" }}>.</span>
+            Iron Däck<span style={{ color: "rgba(220,50,30,0.9)" }}>.</span>
           </span>
         </div>
       </Link>
