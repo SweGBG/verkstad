@@ -23,7 +23,7 @@ const TJANST_HREF: Record<string, string> = {
   "Däckbyte": "/tjanster/dackbyte",
   "Däckhotell": "/tjanster/dackhotell",
   "Oljebyte": "/tjanster/oljebyte",
-  "Hjulinställning": "/tjanster/hjulinställning",
+  "Hjulinställning": "/tjanster/hjulinstallning",
   "Bromskontroll": "/tjanster/bromskontroll",
   "Däcktryckstest": "/tjanster/dacktryckstest",
 };
