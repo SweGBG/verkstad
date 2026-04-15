@@ -17,7 +17,7 @@ type Bokning = {
   created_at: string;
 };
 
-const ADMIN_EMAIL = "din@email.se"; // ← byt till din email
+const ADMIN_EMAIL = "lenn.soder@protonmail.com"; // ← byt till din email
 
 export default function AdminPage() {
   const [user, setUser] = useState<any>(null);
