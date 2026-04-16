@@ -52,6 +52,12 @@ export default function Navbar() {
     }
   };
 
+  const linkStyle = {
+    color: "rgba(255,255,255,0.55)", fontSize: "13px", fontWeight: 500,
+    letterSpacing: "0.08em", textDecoration: "none", textTransform: "uppercase" as const,
+    transition: "color 0.2s",
+  };
+
   return (
     <motion.nav
       initial={{ y: -88, opacity: 0 }}
@@ -70,30 +76,35 @@ export default function Navbar() {
     >
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600;700&display=swap');`}</style>
 
+      {/* LOGO */}
       <Link href="/" onClick={handleLogoClick} style={{ textDecoration: "none" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
           <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(220,50,30,0.15)", border: "1px solid rgba(220,50,30,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>🛞</div>
           <span style={{ color: "#fff", fontSize: "18px", fontWeight: 800, letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif", textTransform: "uppercase" }}>
-            Iron Däck<span style={{ color: "rgba(220,50,30,0.9)" }}>.</span>
+            IronDäck<span style={{ color: "rgba(220,50,30,0.9)" }}>.</span>
           </span>
         </div>
       </Link>
 
+      {/* LÄNKAR */}
       <div style={{ display: "flex", gap: "32px", alignItems: "center" }}>
-        <a href={isHome ? "#tjanster" : "/#tjanster"}
-          style={{ color: "rgba(255,255,255,0.55)", fontSize: "13px", fontWeight: 500, letterSpacing: "0.08em", textDecoration: "none", textTransform: "uppercase", transition: "color 0.2s" }}
+        <a href={isHome ? "#tjanster" : "/#tjanster"} style={linkStyle}
           onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
           onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
         >Tjänster</a>
 
-        {["Om oss", "Priser", "Kontakt"].map((item) => (
-          <a key={item} href={isHome ? `#${item.toLowerCase().replace(" ", "")}` : `/#${item.toLowerCase().replace(" ", "")}`}
-            style={{ color: "rgba(255,255,255,0.55)", fontSize: "13px", fontWeight: 500, letterSpacing: "0.08em", textDecoration: "none", textTransform: "uppercase", transition: "color 0.2s" }}
+        {[
+          { label: "Om oss", href: "/om" },
+          { label: "Priser", href: "/priser" },
+          { label: "Kontakt", href: "/kontakt" },
+        ].map((item) => (
+          <Link key={item.label} href={item.href} style={linkStyle}
             onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
             onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
-          >{item}</a>
+          >{item.label}</Link>
         ))}
 
+        {/* KONTO DROPDOWN */}
         <div data-dropdown style={{ position: "relative" }}>
           <div onClick={() => setDropdownOpen(!dropdownOpen)}
             style={{ width: "36px", height: "36px", border: "1px solid rgba(220,50,30,0.4)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.7)", fontSize: "15px", cursor: "pointer", background: "rgba(220,50,30,0.08)", transition: "all 0.2s" }}
