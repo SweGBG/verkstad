@@ -2,67 +2,20 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-const PRISLISTA = [
-  {
-    kategori: "Däckbyte",
-    emoji: "⚙",
-    href: "/tjanster/dackbyte",
-    priser: [
-      { namn: "Liten bil", spec: "Toyota Yaris, VW Polo", pris: "595 kr" },
-      { namn: "Mellanstor bil", spec: "Volvo V60, Toyota RAV4", pris: "695 kr" },
-      { namn: "Stor bil / SUV", spec: "Volvo XC90, BMW X5", pris: "795 kr" },
-    ],
-  },
-  {
-    kategori: "Däckhotell",
-    emoji: "🏨",
-    href: "/tjanster/dackhotell",
-    priser: [
-      { namn: "Personbil", spec: "Upp till 17\"", pris: "495 kr/år" },
-      { namn: "SUV / Crossover", spec: "18\" - 20\"", pris: "595 kr/år" },
-      { namn: "Skiftbyte ingår", spec: "Boka & glöm", pris: "795 kr/år" },
-    ],
-  },
-  {
-    kategori: "Oljebyte",
-    emoji: "🔧",
-    href: "/tjanster/oljebyte",
-    priser: [
-      { namn: "Mineralolja", spec: "Äldre bensinmotorer", pris: "795 kr" },
-      { namn: "Halvsyntetisk", spec: "Diesel & bensin", pris: "995 kr" },
-      { namn: "Helsyntetisk", spec: "Moderna motorer", pris: "1 295 kr" },
-    ],
-  },
-  {
-    kategori: "Hjulinställning",
-    emoji: "🔍",
-    href: "/tjanster/hjulinstallning",
-    priser: [
-      { namn: "2-hjulsinställning", spec: "Framaxel", pris: "695 kr" },
-      { namn: "4-hjulsinställning", spec: "Alla hjul", pris: "995 kr" },
-    ],
-  },
-  {
-    kategori: "Bromskontroll",
-    emoji: "⚡",
-    href: "/tjanster/bromskontroll",
-    priser: [
-      { namn: "Kontroll", spec: "Inspektion & rapport", pris: "395 kr" },
-      { namn: "Bromsbelägg", spec: "Per axel inkl. arbete", pris: "1 495 kr" },
-      { namn: "Bromsskivor", spec: "Per axel inkl. belägg", pris: "2 495 kr" },
-    ],
-  },
-  {
-    kategori: "Däcktryckstest",
-    emoji: "🛞",
-    href: "/tjanster/dacktryckstest",
-    priser: [
-      { namn: "Komplett kontroll", spec: "Alla 4 hjul + reserv", pris: "GRATIS" },
-    ],
-  },
+const TEAM = [
+  { namn: "Erik Lindqvist", roll: "Grundare & Mekaniker", år: "15 års erfarenhet", emoji: "🔧" },
+  { namn: "Jonas Bergström", roll: "Däckspecialist", år: "10 års erfarenhet", emoji: "🛞" },
+  { namn: "Sara Nilsson", roll: "Kundansvarig", år: "8 års erfarenhet", emoji: "⭐" },
 ];
 
-export default function PriserPage() {
+const VÄRDEN = [
+  { titel: "Ärlighet", text: "Vi säger som det är. Inget onödigt — bara det din bil faktiskt behöver." },
+  { titel: "Snabbhet", text: "Din tid är värdefull. Vi håller tider och levererar samma dag." },
+  { titel: "Kvalitet", text: "Vi använder bara märkesdäck och original reservdelar." },
+  { titel: "Göteborg", text: "Lokalt ägd sedan 2009. Vi känner våra kunder vid namn." },
+];
+
+export default function OmPage() {
   return (
     <main style={{ minHeight: "100vh", background: "#0d0d0d", fontFamily: "'Barlow', sans-serif", overflowX: "hidden" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap');`}</style>
@@ -85,57 +38,64 @@ export default function PriserPage() {
         </Link>
 
         {/* HERO */}
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ marginBottom: "60px" }}>
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ marginBottom: "80px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
             <div style={{ width: "40px", height: "1px", background: "rgba(220,50,30,0.7)" }} />
-            <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>IronDäck — Transparent prissättning</span>
+            <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>IronDäck — Göteborg Est. 2009</span>
           </div>
           <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "clamp(56px, 8vw, 96px)", fontWeight: 900, color: "#fff", textTransform: "uppercase", lineHeight: 0.95, marginBottom: "24px" }}>
-            Våra<br /><span style={{ color: "rgba(220,50,30,0.9)" }}>priser</span>
+            Om<br /><span style={{ color: "rgba(220,50,30,0.9)" }}>oss</span>
           </h1>
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "17px", lineHeight: 1.8, maxWidth: "600px" }}>
-            Inga dolda avgifter. Inga överraskningar. Du vet vad du betalar innan vi börjar.
+            IronDäck grundades 2009 med en enkel idé — ge Göteborgs bilister en verkstad de kan lita på. Inga dolda avgifter, inga onödiga reparationer. Bara hederligt arbete till rätt pris.
           </p>
         </motion.div>
 
-        {/* PRISLISTA */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
-          {PRISLISTA.map((kat, ki) => (
-            <motion.div key={kat.kategori} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: ki * 0.1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-                <span style={{ fontSize: "20px" }}>{kat.emoji}</span>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "22px", fontWeight: 700, color: "#fff", textTransform: "uppercase" }}>{kat.kategori}</p>
-                <Link href={kat.href} style={{ textDecoration: "none", marginLeft: "auto" }}>
-                  <span style={{ color: "rgba(220,50,30,0.6)", fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase" }}>Läs mer →</span>
-                </Link>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: `repeat(${kat.priser.length}, 1fr)`, gap: "12px" }}>
-                {kat.priser.map((p, i) => (
-                  <div key={p.namn} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "20px", position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.4), transparent)" }} />
-                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "10px", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "6px" }}>{p.spec}</p>
-                    <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "16px", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: "8px" }}>{p.namn}</p>
-                    <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "28px", fontWeight: 900, color: p.pris === "GRATIS" ? "rgba(34,197,94,0.9)" : "rgba(220,50,30,0.9)" }}>{p.pris}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {/* VÄRDEN */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ marginBottom: "80px" }}>
+          <p style={{ fontSize: "11px", letterSpacing: "6px", color: "rgba(220,50,30,0.5)", textTransform: "uppercase", marginBottom: "24px" }}>Våra värderingar</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
+            {VÄRDEN.map((v, i) => (
+              <motion.div key={v.titel} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }}
+                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "24px", position: "relative", overflow: "hidden" }}
+              >
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.4), transparent)" }} />
+                <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "20px", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: "8px" }}>{v.titel}</p>
+                <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px", lineHeight: 1.7 }}>{v.text}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
-        {/* NOTE */}
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} style={{ marginTop: "48px", padding: "20px 24px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
-          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "13px", lineHeight: 1.7 }}>
-            * Priser inkl. moms. Däck och delar kan tillkomma. Kostnadsförslag ges alltid innan arbete påbörjas.
-          </p>
+        {/* TEAM */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} style={{ marginBottom: "80px" }}>
+          <p style={{ fontSize: "11px", letterSpacing: "6px", color: "rgba(220,50,30,0.5)", textTransform: "uppercase", marginBottom: "24px" }}>Teamet</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+            {TEAM.map((p, i) => (
+              <motion.div key={p.namn} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.1 }}
+                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "28px 24px", textAlign: "center", position: "relative", overflow: "hidden" }}
+              >
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.4), transparent)" }} />
+                <div style={{ fontSize: "36px", marginBottom: "16px" }}>{p.emoji}</div>
+                <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "18px", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: "4px" }}>{p.namn}</p>
+                <p style={{ color: "rgba(220,50,30,0.8)", fontSize: "12px", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "8px" }}>{p.roll}</p>
+                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px" }}>{p.år}</p>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
         {/* CTA */}
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginTop: "48px", display: "flex", gap: "16px" }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} style={{ display: "flex", gap: "16px" }}>
           <Link href="/#boka" style={{ textDecoration: "none" }}>
             <motion.div whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(220,50,30,0.4)" }} whileTap={{ scale: 0.97 }}
               style={{ background: "rgba(220,50,30,0.9)", color: "#fff", padding: "16px 36px", borderRadius: "6px", fontSize: "14px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
             >Boka tid →</motion.div>
+          </Link>
+          <Link href="/kontakt" style={{ textDecoration: "none" }}>
+            <motion.div whileHover={{ scale: 1.02 }}
+              style={{ border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)", padding: "16px 36px", borderRadius: "6px", fontSize: "14px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
+            >Kontakta oss</motion.div>
           </Link>
         </motion.div>
       </div>
