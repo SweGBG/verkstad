@@ -78,6 +78,44 @@ export default function VerkstadPage() {
         input, select { font-family: 'Barlow', sans-serif; }
         ::placeholder { color: rgba(255,255,255,0.25); }
         select option { background: #1a1a1a; color: #fff; }
+        
+        /* MOBILANPASSNING */
+        @media (max-width: 768px) {
+          .hero-section { padding: 80px 20px 60px 20px !important; min-height: 90vh !important; }
+          .hero-title { font-size: 48px !important; }
+          .hero-buttons { flex-direction: column !important; width: 100% !important; }
+          .hero-buttons a { width: 100% !important; text-align: center !important; }
+          .scroll-indicator { display: none !important; }
+          
+          .stats-section { padding: 40px 20px !important; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 24px !important; }
+          .stat-num { font-size: 40px !important; }
+          
+          .tjanster-section { padding: 60px 20px !important; }
+          .tjanster-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .section-title { font-size: 40px !important; }
+          
+          .boka-section { padding: 60px 20px !important; }
+          .boka-form { padding: 32px 24px !important; }
+          .boka-form h2 { font-size: 32px !important; }
+          .form-grid { grid-template-columns: 1fr !important; }
+          
+          .footer-section { padding: 32px 20px !important; }
+          .footer-content { flex-direction: column !important; gap: 16px !important; text-align: center !important; }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .hero-section { padding: 80px 40px !important; }
+          .stats-grid { gap: 32px !important; }
+          .tjanster-section { padding: 80px 40px !important; }
+          .tjanster-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .boka-section { padding: 80px 40px !important; }
+        }
+        
+        @media (min-width: 640px) and (max-width: 768px) {
+          .hero-buttons { flex-direction: row !important; }
+          .hero-buttons a { width: auto !important; flex: 1 !important; }
+        }
       `}</style>
 
       <div style={{ position: "fixed", inset: 0, zIndex: 0, backgroundImage: "url('/images/verkstad_bg.png')", backgroundSize: "cover", backgroundPosition: "center", filter: "brightness(0.2) saturate(0.2)" }} />
@@ -99,14 +137,14 @@ export default function VerkstadPage() {
       ))}
 
       {/* HERO */}
-      <section style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", alignItems: "center", padding: "0 60px" }}>
+      <section className="hero-section" style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", alignItems: "center", padding: "0 60px" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", width: "100%", paddingTop: "80px" }}>
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.8 }} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" }}>
             <div style={{ width: "40px", height: "1px", background: "rgba(220,50,30,0.7)" }} />
             <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>Göteborg — Est. 2009</span>
           </motion.div>
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "clamp(56px, 7vw, 88px)", fontWeight: 900, lineHeight: 0.95, color: "#fff", textTransform: "uppercase", letterSpacing: "-0.01em", marginBottom: "8px" }}
+          <motion.h1 className="hero-title" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "clamp(48px, 7vw, 88px)", fontWeight: 900, lineHeight: 0.95, color: "#fff", textTransform: "uppercase", letterSpacing: "-0.01em", marginBottom: "8px" }}
           >
             Säkra<br /><span style={{ color: "rgba(220,50,30,0.9)" }}>Däck</span><br />Varje<br />Säsong.
           </motion.h1>
@@ -118,7 +156,7 @@ export default function VerkstadPage() {
           >
             Din lokala däckverkstad i Göteborg. Vi byter, lagrar och balanserar däck — snabbt, tryggt och utan krångel.
           </motion.p>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2, duration: 0.7 }} style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+          <motion.div className="hero-buttons" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2, duration: 0.7 }} style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
             <motion.a href="#boka" whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(220,50,30,0.4)" }} whileTap={{ scale: 0.97 }}
               style={{ background: "rgba(220,50,30,0.9)", color: "#fff", padding: "16px 36px", borderRadius: "6px", fontSize: "14px", fontWeight: 700, letterSpacing: "0.1em", textDecoration: "none", textTransform: "uppercase", display: "inline-block" }}
             >Boka däckbyte</motion.a>
@@ -127,7 +165,7 @@ export default function VerkstadPage() {
             >Se tjänster</motion.a>
           </motion.div>
         </div>
-        <motion.div animate={{ y: [0, 8, 0], opacity: [0.4, 0.8, 0.4] }} transition={{ duration: 2, repeat: Infinity }}
+        <motion.div className="scroll-indicator" animate={{ y: [0, 8, 0], opacity: [0.4, 0.8, 0.4] }} transition={{ duration: 2, repeat: Infinity }}
           style={{ position: "absolute", bottom: "40px", left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}
         >
           <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase" }}>Scrolla</span>
@@ -136,37 +174,39 @@ export default function VerkstadPage() {
       </section>
 
       {/* STATS */}
-      <section style={{ position: "relative", zIndex: 1, padding: "60px", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "40px" }}>
-          {STATS.map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.6 }} style={{ textAlign: "center" }}>
-              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "52px", fontWeight: 900, color: "rgba(220,50,30,0.9)", lineHeight: 1 }}>{s.num}</div>
-              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: "8px" }}>{s.label}</div>
-            </motion.div>
-          ))}
+      <section className="stats-section" style={{ position: "relative", zIndex: 1, padding: "60px", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "40px" }}>
+            {STATS.map((s, i) => (
+              <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.6 }} style={{ textAlign: "center" }}>
+                <div className="stat-num" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "52px", fontWeight: 900, color: "rgba(220,50,30,0.9)", lineHeight: 1 }}>{s.num}</div>
+                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: "8px" }}>{s.label}</div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* TJÄNSTER */}
-      <section id="tjanster" style={{ position: "relative", zIndex: 1, padding: "100px 60px" }}>
+      <section id="tjanster" className="tjanster-section" style={{ position: "relative", zIndex: 1, padding: "100px 60px" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: "60px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
               <div style={{ width: "40px", height: "1px", background: "rgba(220,50,30,0.7)" }} />
               <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>Vad vi gör</span>
             </div>
-            <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "56px", fontWeight: 900, color: "#fff", textTransform: "uppercase" }}>Våra tjänster</h2>
+            <h2 className="section-title" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "56px", fontWeight: 900, color: "#fff", textTransform: "uppercase" }}>Våra tjänster</h2>
           </motion.div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+          <div className="tjanster-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
             {TJANSTER.map((s, i) => <ServiceCard key={s.title} s={s} i={i} />)}
           </div>
         </div>
       </section>
 
       {/* BOKA */}
-      <section id="boka" style={{ position: "relative", zIndex: 1, padding: "100px 60px" }}>
+      <section id="boka" className="boka-section" style={{ position: "relative", zIndex: 1, padding: "100px 60px" }}>
         <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          <motion.div className="boka-form" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "56px 48px", position: "relative", overflow: "hidden" }}
           >
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.8), transparent)" }} />
@@ -176,7 +216,7 @@ export default function VerkstadPage() {
             </div>
             <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "42px", fontWeight: 900, color: "#fff", textTransform: "uppercase", marginBottom: "8px" }}>Boka din tid</h2>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "14px", marginBottom: "36px", lineHeight: 1.6 }}>Vi bekräftar din bokning via email inom 30 minuter.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+            <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
               {[
                 { label: "Namn", placeholder: "Anders Svensson", type: "text" },
                 { label: "Telefon", placeholder: "070-000 00 00", type: "tel" },
@@ -193,7 +233,7 @@ export default function VerkstadPage() {
                 </div>
               ))}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
+            <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
               <div>
                 <label style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Tjänst</label>
                 <select style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", padding: "12px 16px", color: "rgba(255,255,255,0.7)", fontSize: "14px", outline: "none" }}>
@@ -225,8 +265,8 @@ export default function VerkstadPage() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ position: "relative", zIndex: 1, padding: "40px 60px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <footer className="footer-section" style={{ position: "relative", zIndex: 1, padding: "40px 60px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div className="footer-content" style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "16px" }}>🛞</span>
             <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "13px", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>NordDäck Göteborg</span>
