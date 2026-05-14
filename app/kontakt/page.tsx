@@ -12,7 +12,36 @@ const INFO = [
 
 export default function KontaktPage() {
   const [skickad, setSkickad] = useState(false);
+  const [skickar, setSkickar] = useState(false);
   const [form, setForm] = useState({ namn: "", email: "", meddelande: "" });
+
+  const skickaFormulär = async () => {
+    if (!form.namn || !form.email || !form.meddelande) {
+      alert("Fyll i alla fält");
+      return;
+    }
+
+    setSkickar(true);
+    try {
+      const res = await fetch("/api/kontakt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (res.ok) {
+        setSkickad(true);
+        setForm({ namn: "", email: "", meddelande: "" });
+      } else {
+        alert("Något gick fel. Försök igen.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Kunde inte skicka meddelandet.");
+    } finally {
+      setSkickar(false);
+    }
+  };
 
   return (
     <main style={{ minHeight: "100vh", background: "#0d0d0d", fontFamily: "'Barlow', sans-serif", overflowX: "hidden" }}>
@@ -93,6 +122,7 @@ export default function KontaktPage() {
                     <label style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>{f.label}</label>
                     <input type={f.type} placeholder={f.placeholder} value={form[f.key as keyof typeof form]}
                       onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                      disabled={skickar}
                       style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", padding: "12px 16px", color: "#fff", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
                       onFocus={e => e.currentTarget.style.borderColor = "rgba(220,50,30,0.6)"}
                       onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
@@ -103,18 +133,20 @@ export default function KontaktPage() {
                   <label style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Meddelande</label>
                   <textarea placeholder="Skriv ditt meddelande här..." rows={5} value={form.meddelande}
                     onChange={e => setForm({ ...form, meddelande: e.target.value })}
+                    disabled={skickar}
                     style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", padding: "12px 16px", color: "#fff", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
                     onFocus={e => e.currentTarget.style.borderColor = "rgba(220,50,30,0.6)"}
                     onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
                   />
                 </div>
                 <motion.button
-                  whileHover={{ scale: 1.02, boxShadow: "0 0 30px rgba(220,50,30,0.4)" }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setSkickad(true)}
-                  style={{ width: "100%", color: "#fff", border: "none", borderRadius: "6px", padding: "14px", fontSize: "14px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", background: skickad ? "rgba(34,197,94,0.8)" : "rgba(220,50,30,0.9)" }}
+                  whileHover={{ scale: skickar ? 1 : 1.02, boxShadow: skickar ? "none" : "0 0 30px rgba(220,50,30,0.4)" }}
+                  whileTap={{ scale: skickar ? 1 : 0.98 }}
+                  onClick={skickaFormulär}
+                  disabled={skickar}
+                  style={{ width: "100%", color: "#fff", border: "none", borderRadius: "6px", padding: "14px", fontSize: "14px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", cursor: skickar ? "not-allowed" : "pointer", background: skickad ? "rgba(34,197,94,0.8)" : skickar ? "rgba(220,50,30,0.5)" : "rgba(220,50,30,0.9)", opacity: skickar ? 0.7 : 1 }}
                 >
-                  {skickad ? "✓ Skickat!" : "Skicka meddelande →"}
+                  {skickad ? "✓ Skickat!" : skickar ? "Skickar..." : "Skicka meddelande →"}
                 </motion.button>
               </div>
             </div>

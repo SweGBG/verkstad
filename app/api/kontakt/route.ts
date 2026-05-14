@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     await resend.emails.send({
-      from: "IronDäck Kontakt <no-reply@dindoman.se>",
+      from: "IronDäck Kontakt <onboarding@resend.dev>",
       to: "lenn.soder@protonmail.com", // Byt till din riktiga email
       replyTo: email,
       subject: `Nytt meddelande från ${namn}`,
