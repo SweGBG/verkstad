@@ -141,7 +141,7 @@ export default function VerkstadPage() {
         <div style={{ maxWidth: "1200px", margin: "0 auto", width: "100%", paddingTop: "80px" }}>
           <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.8 }} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" }}>
             <div style={{ width: "40px", height: "1px", background: "rgba(220,50,30,0.7)" }} />
-            <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>Göteborg — Est. 2009</span>
+            <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>Göteborg — Est. 2026</span>
           </motion.div>
           <motion.h1 className="hero-title" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "clamp(48px, 7vw, 88px)", fontWeight: 900, lineHeight: 0.95, color: "#fff", textTransform: "uppercase", letterSpacing: "-0.01em", marginBottom: "8px" }}
@@ -271,7 +271,7 @@ export default function VerkstadPage() {
             <span style={{ fontSize: "16px" }}>🛞</span>
             <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "13px", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>NordDäck Göteborg</span>
           </div>
-          <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase" }}>GÖTEBORG — EST. 2009</span>
+          <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase" }}>GÖTEBORG — EST. 2026</span>
         </div>
       </footer>
     </main>
