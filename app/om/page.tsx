@@ -12,7 +12,7 @@ const VÄRDEN = [
   { titel: "Ärlighet", text: "Vi säger som det är. Inget onödigt — bara det din bil faktiskt behöver." },
   { titel: "Snabbhet", text: "Din tid är värdefull. Vi håller tider och levererar samma dag." },
   { titel: "Kvalitet", text: "Vi använder bara märkesdäck och original reservdelar." },
-  { titel: "Göteborg", text: "Lokalt ägd sedan 2009. Vi känner våra kunder vid namn." },
+  { titel: "Göteborg", text: "Lokalt ägd sedan 2026. Vi känner våra kunder vid namn." },
 ];
 
 export default function OmPage() {
@@ -47,7 +47,7 @@ export default function OmPage() {
             Om<br /><span style={{ color: "rgba(220,50,30,0.9)" }}>oss</span>
           </h1>
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "17px", lineHeight: 1.8, maxWidth: "600px" }}>
-            IronDäck grundades 2009 med en enkel idé — ge Göteborgs bilister en verkstad de kan lita på. Inga dolda avgifter, inga onödiga reparationer. Bara hederligt arbete till rätt pris.
+            IronDäck grundades 2026 med en enkel idé — ge Göteborgs bilister en verkstad de kan lita på. Inga dolda avgifter, inga onödiga reparationer. Bara hederligt arbete till rätt pris.
           </p>
         </motion.div>
 
