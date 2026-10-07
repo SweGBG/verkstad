@@ -1,246 +1,198 @@
 "use client";
-import { motion } from "framer-motion";
-import { useState } from "react";
-
-const TIDER = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-
-const TJANSTER = [
-  { icon: "⚙", label: "Däckbyte", pris: "från 595 kr" },
-  { icon: "🏨", label: "Däckhotell", pris: "från 495 kr/år" },
-  { icon: "🔧", label: "Oljebyte", pris: "från 795 kr" },
-  { icon: "🔍", label: "Hjulinställning", pris: "från 695 kr" },
-  { icon: "⚡", label: "Bromskontroll", pris: "från 395 kr" },
-  { icon: "🛞", label: "Däcktryckstest", pris: "Gratis" },
-];
+import { useEffect, useMemo, useState } from "react";
+import { TIDER, TJANSTER } from "../lib/data";
+import { TjanstIkon, IconArrow } from "./icons";
+import { useAuth } from "../lib/useAuth";
 
 type Status = "idle" | "loading" | "success" | "error";
+const VECKODAG = ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"];
+const MANAD = ["jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/** Nästa 14 öppetdagar (söndag stängt). */
+function kommandeDagar() {
+  const ut: Date[] = [];
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  while (ut.length < 14) {
+    if (d.getDay() !== 0) ut.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return ut;
+}
+
+/** Låtsas-beläggning så kalendern ser levande ut i demon. */
+const upptagen = (datum: string, tid: string) => {
+  let h = 0;
+  for (const c of datum + tid) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return h % 5 === 0;
+};
 
 export default function BookingForm() {
-  const [form, setForm] = useState({
-    namn: "", telefon: "", email: "", regnr: "", tjanst: "", datum: "", tid: "",
-  });
+  const { user } = useAuth();
+  const [form, setForm] = useState({ namn: "", telefon: "", email: "", regnr: "", tjanst: "", datum: "", tid: "", meddelande: "" });
   const [status, setStatus] = useState<Status>("idle");
-  const [felmeddelande, setFelmeddelande] = useState("");
+  const [fel, setFel] = useState("");
+  const [demoSvar, setDemoSvar] = useState(false);
+  const [dagar, setDagar] = useState<Date[]>([]);
 
-  const uppdatera = (falt: string, varde: string) =>
-    setForm((prev) => ({ ...prev, [falt]: varde }));
+  // Datum räknas i webbläsaren (undviker hydration-skillnad mot servern)
+  useEffect(() => { setDagar(kommandeDagar()); }, []);
+
+  // Förval via /?tjanst=dackbyte#boka
+  useEffect(() => {
+    const las = () => {
+      const slug = new URLSearchParams(window.location.search).get("tjanst");
+      const t = TJANSTER.find((x) => x.slug === slug);
+      if (t) setForm((f) => ({ ...f, tjanst: t.titel }));
+    };
+    las();
+    window.addEventListener("popstate", las);
+    return () => window.removeEventListener("popstate", las);
+  }, []);
+
+  useEffect(() => {
+    if (user) setForm((f) => ({ ...f, namn: f.namn || user.namn, email: f.email || user.email }));
+  }, [user]);
+
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const valdDag = dagar.find((d) => iso(d) === form.datum);
+  const tider = useMemo(() => (valdDag?.getDay() === 6 ? TIDER.filter((t) => t < "14:00") : TIDER), [valdDag]);
+
+  const steg = [!!form.tjanst, !!form.datum && !!form.tid, !!(form.namn && form.telefon && form.email && form.regnr)];
 
   const skicka = async () => {
     const { namn, telefon, email, regnr, tjanst, datum, tid } = form;
-    if (!namn || !telefon || !email || !regnr || !tjanst || !datum || !tid) {
-      setFelmeddelande("Fyll i alla fält för att fortsätta.");
-      return;
-    }
-    setFelmeddelande("");
+    if (!tjanst) return setFel("Välj en tjänst.");
+    if (!datum || !tid) return setFel("Välj dag och tid.");
+    if (!namn || !telefon || !email || !regnr) return setFel("Fyll i namn, telefon, e-post och registreringsnummer.");
+    if (!/^\S+@\S+\.\S+$/.test(email)) return setFel("E-postadressen ser inte rätt ut.");
+    setFel("");
     setStatus("loading");
     try {
       const res = await fetch("/api/send-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, regnr: regnr.toUpperCase() }),
       });
-      if (!res.ok) throw new Error();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error);
+      setDemoSvar(!!data.demo);
       setStatus("success");
-    } catch {
+    } catch (e) {
+      setFel(e instanceof Error && e.message ? e.message : "Något gick fel.");
       setStatus("error");
     }
   };
 
   if (status === "success") {
+    const d = valdDag;
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        style={{
-          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: "16px", padding: "60px 48px", textAlign: "center", position: "relative", overflow: "hidden",
-        }}
-      >
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(34,197,94,0.8), transparent)" }} />
-        <motion.div
-          animate={{ rotate: [0, 360] }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          style={{ fontSize: "56px", marginBottom: "24px" }}
-        >🛞</motion.div>
-        <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "36px", fontWeight: 900, color: "#fff", textTransform: "uppercase", marginBottom: "12px" }}>
-          Bokning mottagen!
-        </h3>
-        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", lineHeight: 1.7, maxWidth: "400px", margin: "0 auto 32px" }}>
-          En bekräftelse har skickats till <strong style={{ color: "#fff" }}>{form.email}</strong>. Vi ses {form.datum} kl. {form.tid}!
+      <div className="booking" style={{ textAlign: "center", padding: "56px 32px" }}>
+        <svg className="success-ring" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round">
+          <circle cx="50" cy="50" r="46" />
+          <path d="M30 52l13 13 27-29" />
+        </svg>
+        <h3 className="h-display h2" style={{ fontSize: 44 }}>Bokning mottagen!</h3>
+        <p className="dim" style={{ margin: "14px auto 26px", maxWidth: 420 }}>
+          {demoSvar
+            ? "Demoläge — inget mejl skickades, men så här ser flödet ut för kunden."
+            : <>En bekräftelse är skickad till <strong style={{ color: "var(--ink)" }}>{form.email}</strong>.</>}
         </p>
-        <div style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: "10px", padding: "16px 24px", display: "inline-block" }}>
-          <p style={{ color: "rgba(34,197,94,0.9)", fontSize: "13px", fontWeight: 600, margin: 0 }}>
-            ✓ {form.tjanst} · {form.datum} · kl. {form.tid}
-          </p>
+        <div className="summary" style={{ justifyContent: "center", display: "inline-flex" }}>
+          <strong>{form.tjanst}</strong>
+          <span>{d ? `${VECKODAG[d.getDay()]} ${d.getDate()} ${MANAD[d.getMonth()]}` : form.datum}</span>
+          <span>kl. {form.tid}</span>
+          <span className="mono">{form.regnr.toUpperCase()}</span>
         </div>
-      </motion.div>
+        <div style={{ marginTop: 28 }}>
+          <button className="btn btn-ghost btn-sm" onClick={() => { setStatus("idle"); setForm((f) => ({ ...f, tjanst: "", datum: "", tid: "", meddelande: "" })); }}>
+            Boka en till
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      style={{
-        background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "16px", padding: "48px", position: "relative", overflow: "hidden",
-      }}
-    >
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,25,0.8), transparent)" }} />
-
-      {/* Rubrik */}
-      <div style={{ marginBottom: "36px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-          <div style={{ width: "30px", height: "1px", background: "rgba(220,50,25,0.7)" }} />
-          <span style={{ color: "rgba(220,50,25,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>Bokningsformulär</span>
-        </div>
-        <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "40px", fontWeight: 900, color: "#fff", textTransform: "uppercase", margin: "0 0 6px" }}>Boka din tid</h2>
-        <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "14px", margin: 0 }}>Bekräftelse skickas direkt till din email.</p>
+    <div className="booking">
+      <div className="progress" aria-hidden="true">
+        {steg.map((ok, i) => <span key={i} className={ok ? "on" : ""} />)}
       </div>
 
-      {/* Steg 1 — Tjänst */}
-      <div style={{ marginBottom: "28px" }}>
-        <label style={labelStyle}>1. Välj tjänst</label>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+      <fieldset style={{ border: "none", marginBottom: 30 }}>
+        <legend className="label">1 · Välj tjänst</legend>
+        <div className="svc-grid">
           {TJANSTER.map((t) => (
-            <motion.button
-              key={t.label}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => uppdatera("tjanst", t.label)}
-              style={{
-                background: form.tjanst === t.label ? "rgba(220,50,25,0.15)" : "rgba(255,255,255,0.03)",
-                border: `1px solid ${form.tjanst === t.label ? "rgba(220,50,25,0.6)" : "rgba(255,255,255,0.08)"}`,
-                borderRadius: "8px", padding: "14px 10px", cursor: "pointer",
-                textAlign: "center", transition: "all 0.2s",
-              }}
-            >
-              <div style={{ fontSize: "20px", marginBottom: "4px" }}>{t.icon}</div>
-              <div style={{ color: form.tjanst === t.label ? "#fff" : "rgba(255,255,255,0.6)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em" }}>{t.label}</div>
-              <div style={{ color: form.tjanst === t.label ? "rgba(220,50,25,0.9)" : "rgba(255,255,255,0.25)", fontSize: "11px", marginTop: "2px" }}>{t.pris}</div>
-            </motion.button>
+            <button key={t.slug} type="button" className="chip svc-chip" aria-pressed={form.tjanst === t.titel} onClick={() => set("tjanst", t.titel)}>
+              <span className="ember"><TjanstIkon namn={t.ikon} size={22} /></span>
+              <span>{t.titel}</span>
+              <span className="svc-price">{t.fran}</span>
+            </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
-      {/* Steg 2 — Datum & tid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "28px" }}>
-        <div>
-          <label style={labelStyle}>2. Välj datum</label>
-          <input
-            type="date"
-            value={form.datum}
-            min={new Date().toISOString().split("T")[0]}
-            onChange={(e) => uppdatera("datum", e.target.value)}
-            style={inputStyle}
-            onFocus={e => e.currentTarget.style.borderColor = "rgba(220,50,25,0.6)"}
-            onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
-          />
+      <fieldset style={{ border: "none", marginBottom: 30 }}>
+        <legend className="label">2 · Välj dag</legend>
+        <div className="days">
+          {dagar.length === 0
+            ? Array.from({ length: 7 }, (_, i) => <div key={i} className="skeleton" style={{ height: 64 }} />)
+            : dagar.map((d) => {
+                const v = iso(d);
+                return (
+                  <button key={v} type="button" className="chip day" aria-pressed={form.datum === v} onClick={() => { set("datum", v); set("tid", ""); }}>
+                    <small>{VECKODAG[d.getDay()]}</small>
+                    <b>{d.getDate()}</b>
+                    <small>{MANAD[d.getMonth()]}</small>
+                  </button>
+                );
+              })}
         </div>
-        <div>
-          <label style={labelStyle}>3. Välj tid</label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "6px" }}>
-            {TIDER.map((t) => (
-              <motion.button
-                key={t}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => uppdatera("tid", t)}
-                style={{
-                  background: form.tid === t ? "rgba(220,50,25,0.2)" : "rgba(255,255,255,0.03)",
-                  border: `1px solid ${form.tid === t ? "rgba(220,50,25,0.6)" : "rgba(255,255,255,0.08)"}`,
-                  borderRadius: "6px", padding: "8px 4px",
-                  color: form.tid === t ? "#fff" : "rgba(255,255,255,0.5)",
-                  fontSize: "12px", fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
-                }}
-              >{t}</motion.button>
+      </fieldset>
+
+      {form.datum && (
+        <fieldset style={{ border: "none", marginBottom: 30, animation: "fadeUp .5s var(--ease)" }}>
+          <legend className="label">3 · Välj tid</legend>
+          <div className="time-grid">
+            {tider.map((t) => (
+              <button key={t} type="button" className="chip mono" aria-pressed={form.tid === t} disabled={upptagen(form.datum, t)} onClick={() => set("tid", t)}>
+                {t}
+              </button>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Steg 3 — Kontaktuppgifter */}
-      <div style={{ marginBottom: "28px" }}>
-        <label style={labelStyle}>4. Dina uppgifter</label>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-          {[
-            { falt: "namn", placeholder: "Fullständigt namn", type: "text" },
-            { falt: "telefon", placeholder: "Telefonnummer", type: "tel" },
-            { falt: "email", placeholder: "Email-adress", type: "email" },
-            { falt: "regnr", placeholder: "Registreringsnummer (ABC 123)", type: "text" },
-          ].map(({ falt, placeholder, type }) => (
-            <input
-              key={falt}
-              type={type}
-              placeholder={placeholder}
-              value={form[falt as keyof typeof form]}
-              onChange={(e) => uppdatera(falt, e.target.value)}
-              style={{ ...inputStyle, width: "100%" }}
-              onFocus={e => e.currentTarget.style.borderColor = "rgba(220,50,25,0.6)"}
-              onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Felmeddelande */}
-      {felmeddelande && (
-        <motion.p
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ color: "rgba(220,50,25,0.9)", fontSize: "13px", marginBottom: "16px" }}
-        >
-          ⚠ {felmeddelande}
-        </motion.p>
+        </fieldset>
       )}
 
-      {/* Sammanfattning */}
+      <fieldset style={{ border: "none", marginBottom: 24 }}>
+        <legend className="label">{form.datum ? "4" : "3"} · Dina uppgifter</legend>
+        <div className="grid g2" style={{ gap: 12 }}>
+          <input className="input" placeholder="Namn" autoComplete="name" value={form.namn} onChange={(e) => set("namn", e.target.value)} />
+          <input className="input" placeholder="Telefon" type="tel" autoComplete="tel" value={form.telefon} onChange={(e) => set("telefon", e.target.value)} />
+          <input className="input" placeholder="E-post" type="email" autoComplete="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+          <input className="input mono" placeholder="Reg.nr (ABC 123)" value={form.regnr} maxLength={8} style={{ textTransform: "uppercase", letterSpacing: "0.08em" }} onChange={(e) => set("regnr", e.target.value)} />
+        </div>
+        <textarea className="input" placeholder="Övrigt (valfritt) — t.ex. däckdimension eller om du vill vänta på plats" value={form.meddelande} onChange={(e) => set("meddelande", e.target.value)} style={{ marginTop: 12, minHeight: 84 }} />
+      </fieldset>
+
       {form.tjanst && form.datum && form.tid && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ background: "rgba(220,50,25,0.06)", border: "1px solid rgba(220,50,25,0.2)", borderRadius: "8px", padding: "14px 18px", marginBottom: "20px", display: "flex", gap: "16px", flexWrap: "wrap" }}
-        >
-          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "12px" }}>📋 Sammanfattning:</span>
-          <span style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{form.tjanst}</span>
-          <span style={{ color: "rgba(220,50,25,0.8)", fontSize: "12px" }}>📅 {form.datum}</span>
-          <span style={{ color: "rgba(220,50,25,0.8)", fontSize: "12px" }}>🕐 kl. {form.tid}</span>
-        </motion.div>
+        <div className="summary" style={{ marginBottom: 18 }}>
+          <strong>{form.tjanst}</strong>
+          <span>{valdDag ? `${VECKODAG[valdDag.getDay()]} ${valdDag.getDate()} ${MANAD[valdDag.getMonth()]}` : ""}</span>
+          <span>kl. {form.tid}</span>
+        </div>
       )}
 
-      {/* Submit */}
-      <motion.button
-        whileHover={{ scale: 1.02, boxShadow: "0 0 30px rgba(220,50,25,0.4)" }}
-        whileTap={{ scale: 0.98 }}
-        onClick={skicka}
-        disabled={status === "loading"}
-        style={{
-          width: "100%", background: status === "loading" ? "rgba(220,50,25,0.5)" : "rgba(220,50,25,0.9)",
-          color: "#fff", border: "none", borderRadius: "6px", padding: "16px",
-          fontSize: "14px", fontWeight: 700, letterSpacing: "0.12em",
-          textTransform: "uppercase", cursor: status === "loading" ? "not-allowed" : "pointer",
-        }}
-      >
-        {status === "loading" ? "Skickar bokning..." : "Bekräfta bokning →"}
-      </motion.button>
+      {fel && <p className="alert alert-bad" role="alert" style={{ marginBottom: 16 }}>{fel}</p>}
 
-      {status === "error" && (
-        <p style={{ color: "rgba(220,50,25,0.9)", fontSize: "13px", textAlign: "center", marginTop: "12px" }}>
-          Något gick fel. Försök igen eller ring oss på 031-000 00 00.
-        </p>
-      )}
-    </motion.div>
+      <button className="btn btn-primary btn-block" onClick={skicka} disabled={status === "loading"}>
+        {status === "loading" ? "Skickar…" : <>Bekräfta bokning <IconArrow /></>}
+      </button>
+      <p className="small muted" style={{ textAlign: "center", marginTop: 14 }}>
+        Gratis avbokning upp till 24 h innan. Bekräftelse direkt via e-post.
+      </p>
+    </div>
   );
 }
-
-const labelStyle: React.CSSProperties = {
-  display: "block", color: "rgba(255,255,255,0.4)",
-  fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em",
-  textTransform: "uppercase", marginBottom: "10px",
-};
-
-const inputStyle: React.CSSProperties = {
-  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-  borderRadius: "6px", padding: "12px 16px", color: "#fff", fontSize: "14px",
-  outline: "none", transition: "border-color 0.2s", colorScheme: "dark" as const,
-  width: "100%",
-};

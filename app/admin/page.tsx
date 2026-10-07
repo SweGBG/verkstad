@@ -1,162 +1,177 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase";
+import { useAuth } from "../lib/useAuth";
+import { DEMO_ALLA_BOKNINGAR, type Bokning } from "../lib/demo";
+import { TIDER, TJANSTER } from "../lib/data";
+import { DateBox, StatusPill } from "../components/portal-ui";
+import { IconMail, IconPhone, TjanstIkon } from "../components/icons";
 
-type Bokning = {
-  id: string;
-  namn: string;
-  email: string;
-  telefon: string;
-  tjanst: string;
-  datum: string;
-  tid: string;
-  regnr: string;
-  status: string;
-  created_at: string;
+const FILTER = ["alla", "väntar", "bekräftad", "genomförd", "avbokad"] as const;
+type Filter = (typeof FILTER)[number];
+
+const idagIso = () => new Date().toISOString().split("T")[0];
+const prisFor = (tjanst: string) => {
+  const p = TJANSTER.find((t) => t.titel === tjanst)?.priser[0]?.pris ?? "0";
+  return Number(p.replace(/[^\d]/g, "")) || 0;
 };
 
-const ADMIN_EMAIL = "lenn.soder@protonmail.com"; // ← byt till din email
-
-export default function AdminPage() {
-  const [user, setUser] = useState<any>(null);
-  const [bokningar, setBokningar] = useState<Bokning[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("bokningar");
-  const [filter, setFilter] = useState("alla");
+export default function Admin() {
   const router = useRouter();
-  const supabase = createClient();
+  const { user, klar, loggaUt } = useAuth();
+  const [bokningar, setBokningar] = useState<Bokning[] | null>(null);
+  const [filter, setFilter] = useState<Filter>("alla");
+  const [sok, setSok] = useState("");
 
   useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.email !== ADMIN_EMAIL) { router.push("/"); return; }
-      setUser(user);
-      fetchBokningar();
+    if (!klar) return;
+    if (!user?.admin) { router.replace(user ? "/konto" : "/medlem"); return; }
+    const ladda = async () => {
+      if (user.demo) { setBokningar(DEMO_ALLA_BOKNINGAR); return; }
+      const { data } = await createClient().from("bookings").select("*").order("datum", { ascending: true });
+      setBokningar((data as Bokning[]) || []);
     };
-    init();
-  }, []);
+    ladda();
+  }, [klar, user, router]);
 
-  const fetchBokningar = async () => {
-    const { data } = await supabase
-      .from("bookings")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setBokningar(data || []);
-    setLoading(false);
+  const lista = useMemo(() => bokningar ?? [], [bokningar]);
+  const idag = idagIso();
+
+  const stats = useMemo(() => ({
+    idag: lista.filter((b) => b.datum === idag && b.status !== "avbokad").length,
+    vantar: lista.filter((b) => !b.status || b.status === "väntar").length,
+    bekraftad: lista.filter((b) => b.status === "bekräftad").length,
+    intakt: lista.filter((b) => b.datum >= idag && (b.status === "bekräftad" || b.status === "väntar")).reduce((s, b) => s + prisFor(b.tjanst), 0),
+  }), [lista, idag]);
+
+  const dagens = useMemo(() => {
+    const m = new Map(lista.filter((b) => b.datum === idag && b.status !== "avbokad").map((b) => [b.tid, b]));
+    return TIDER.map((t) => ({ tid: t, b: m.get(t) }));
+  }, [lista, idag]);
+
+  const visade = useMemo(() => {
+    const q = sok.trim().toLowerCase();
+    return lista
+      .filter((b) => filter === "alla" || (b.status || "väntar") === filter)
+      .filter((b) => !q || [b.namn, b.email, b.regnr, b.tjanst, b.telefon].some((v) => v?.toLowerCase().includes(q)))
+      .sort((a, b) => (a.datum + a.tid).localeCompare(b.datum + b.tid));
+  }, [lista, filter, sok]);
+
+  const satt = async (id: string, status: string) => {
+    setBokningar((p) => p?.map((b) => (b.id === id ? { ...b, status } : b)) ?? null);
+    if (!user?.demo) await createClient().from("bookings").update({ status }).eq("id", id);
   };
 
-  const updateStatus = async (id: string, status: string) => {
-    await supabase.from("bookings").update({ status }).eq("id", id);
-    setBokningar(prev => prev.map(b => b.id === id ? { ...b, status } : b));
-  };
-
-  const filteredBokningar = bokningar.filter(b => filter === "alla" ? true : b.status === filter);
-
-  const stats = {
-    total: bokningar.length,
-    vantar: bokningar.filter(b => !b.status || b.status === "väntar").length,
-    bekraftad: bokningar.filter(b => b.status === "bekräftad").length,
-    idag: bokningar.filter(b => b.datum === new Date().toISOString().split("T")[0]).length,
-  };
-
-  if (loading) return (
-    <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0d0d0d" }}>
-      <p style={{ color: "rgba(220,50,30,0.5)", letterSpacing: "6px", fontSize: "12px", textTransform: "uppercase" }}>Laddar...</p>
-    </div>
-  );
+  if (!klar || !user?.admin || bokningar === null) {
+    return (
+      <main className="wrap" style={{ padding: "130px 32px 80px", display: "grid", gap: 16 }}>
+        <div className="skeleton" style={{ height: 70, width: 300 }} />
+        <div className="grid g4">{[0, 1, 2, 3].map((i) => <div key={i} className="skeleton" style={{ height: 110 }} />)}</div>
+        <div className="skeleton" style={{ height: 300 }} />
+      </main>
+    );
+  }
 
   return (
-    <main style={{ minHeight: "100vh", background: "#0d0d0d", fontFamily: "'Barlow', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600&display=swap');`}</style>
-
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, backgroundImage: "url('/images/verkstad_bg.png')", backgroundSize: "cover", backgroundPosition: "center", filter: "brightness(0.08) saturate(0.2)" }} />
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, background: "rgba(13,13,13,0.94)" }} />
-
-      <div style={{ position: "relative", zIndex: 1, maxWidth: "1200px", margin: "0 auto", padding: "100px 24px 60px" }}>
-
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: "40px" }}>
-          <p style={{ fontSize: "10px", letterSpacing: "6px", color: "rgba(220,50,30,0.5)", textTransform: "uppercase", marginBottom: "8px" }}>NordDäck</p>
-          <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "72px", fontWeight: 900, color: "#fff", textTransform: "uppercase", lineHeight: 1, marginBottom: "4px" }}>Admin</h1>
-          <p style={{ color: "rgba(255,255,255,0.25)", fontSize: "13px" }}>{user?.email}</p>
-          <div style={{ height: "1px", background: "linear-gradient(90deg, rgba(220,50,30,0.5), transparent)", marginTop: "20px" }} />
-        </motion.div>
-
-        {/* Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "40px" }}>
-          {[
-            { label: "Totalt", value: stats.total },
-            { label: "Väntar", value: stats.vantar, alert: stats.vantar > 0 },
-            { label: "Bekräftade", value: stats.bekraftad },
-            { label: "Idag", value: stats.idag },
-          ].map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-              style={{ background: s.alert ? "rgba(220,50,30,0.08)" : "rgba(255,255,255,0.02)", border: `1px solid ${s.alert ? "rgba(220,50,30,0.3)" : "rgba(255,255,255,0.06)"}`, borderRadius: "12px", padding: "20px 24px" }}
-            >
-              <p style={{ color: s.alert ? "rgba(220,50,30,0.6)" : "rgba(255,255,255,0.3)", fontSize: "10px", letterSpacing: "4px", textTransform: "uppercase", marginBottom: "8px" }}>{s.label}</p>
-              <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "42px", fontWeight: 900, color: s.alert ? "rgba(220,50,30,0.9)" : "#fff", lineHeight: 1 }}>{s.value}</p>
-            </motion.div>
-          ))}
+    <main className="wrap" style={{ padding: "120px 32px 90px" }}>
+      {user.demo && (
+        <div className="demo-bar">
+          <span><strong>Demo-admin</strong> — ändringar sparas bara i fliken.</span>
+          <button className="btn btn-ghost btn-sm" onClick={async () => { await loggaUt(); router.push("/"); }}>Avsluta demo</button>
         </div>
+      )}
 
-        {/* Filter */}
-        <div style={{ display: "flex", gap: "8px", marginBottom: "24px" }}>
-          {["alla", "väntar", "bekräftad", "avbokad"].map((f) => (
-            <button key={f} onClick={() => setFilter(f)}
-              style={{
-                padding: "8px 18px", borderRadius: "6px", border: "none", cursor: "pointer",
-                background: filter === f ? "rgba(220,50,30,0.9)" : "rgba(255,255,255,0.04)",
-                color: filter === f ? "#fff" : "rgba(255,255,255,0.4)",
-                fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em",
-                textTransform: "uppercase", fontFamily: "'Barlow', sans-serif",
-                transition: "all 0.2s",
-              }}
-            >{f}</button>
-          ))}
-        </div>
+      <header style={{ marginBottom: 36 }}>
+        <span className="eyebrow">Verkstadspanel</span>
+        <h1 className="h-display h2" style={{ marginTop: 14 }}>Ad<span className="ember-grad">min</span></h1>
+        <p className="dim small" style={{ marginTop: 6 }}>{new Date().toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long", year: "numeric" })} · {user.email}</p>
+      </header>
 
-        {/* Bokningar */}
-        <div>
-          {filteredBokningar.length === 0 ? (
-            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "48px", textAlign: "center" }}>
-              <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "13px", letterSpacing: "4px", textTransform: "uppercase" }}>Inga bokningar</p>
+      <div className="grid g4 kpis" style={{ marginBottom: 28 }}>
+        {[
+          { l: "Bilar idag", v: String(stats.idag) },
+          { l: "Väntar på svar", v: String(stats.vantar), alert: stats.vantar > 0 },
+          { l: "Bekräftade", v: String(stats.bekraftad) },
+          { l: "Kommande (est.)", v: `${stats.intakt.toLocaleString("sv-SE")} kr` },
+        ].map((k) => (
+          <div key={k.l} className={`card kpi ${k.alert ? "card-glow" : ""}`} style={k.alert ? { borderColor: "var(--ember-line)", background: "var(--ember-soft)" } : undefined}>
+            <div className="kpi-label" style={k.alert ? { color: "var(--ember-2)" } : undefined}>{k.l}</div>
+            <div className="kpi-num">{k.v}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="portal" style={{ gridTemplateColumns: "300px 1fr" }} data-admin>
+        {/* Dagens schema */}
+        <aside className="card" style={{ position: "sticky", top: 96, padding: 22 }}>
+          <h2 className="label" style={{ marginBottom: 16 }}>Dagens lyft</h2>
+          <div style={{ display: "grid", gap: 6 }}>
+            {dagens.map(({ tid, b }) => (
+              <div key={tid} style={{ display: "flex", gap: 12, alignItems: "center", padding: "8px 10px", borderRadius: 8, background: b ? "var(--ember-soft)" : "transparent", border: `1px solid ${b ? "rgba(226,64,31,.25)" : "var(--line)"}` }}>
+                <span className="mono small" style={{ width: 44, color: b ? "var(--ember-2)" : "var(--mute)", fontWeight: 700 }}>{tid}</span>
+                {b ? (
+                  <span style={{ minWidth: 0 }}>
+                    <strong style={{ fontSize: 14 }}>{b.tjanst}</strong>
+                    <span className="small dim" style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b.namn} · {b.regnr}</span>
+                  </span>
+                ) : (
+                  <span className="small muted">Ledigt</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* Bokningslista */}
+        <section style={{ minWidth: 0 }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "space-between", marginBottom: 18 }}>
+            <div className="tabs">
+              {FILTER.map((f) => (
+                <button key={f} aria-pressed={filter === f} onClick={() => setFilter(f)}>
+                  {f} {f !== "alla" && `(${lista.filter((b) => (b.status || "väntar") === f).length})`}
+                </button>
+              ))}
             </div>
-          ) : (
-            filteredBokningar.map((b, i) => (
-              <motion.div key={b.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "24px", marginBottom: "10px", position: "relative", overflow: "hidden" }}
-              >
-                <div style={{ position: "absolute", top: 0, left: 0, width: "3px", height: "100%", background: b.status === "bekräftad" ? "rgba(34,197,94,0.7)" : b.status === "avbokad" ? "rgba(255,100,100,0.5)" : "rgba(220,50,30,0.7)" }} />
+            <input className="input" placeholder="Sök namn, regnr, tjänst…" value={sok} onChange={(e) => setSok(e.target.value)} style={{ maxWidth: 260, padding: "10px 14px" }} />
+          </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "16px", alignItems: "center" }}>
-                  <div>
-                    <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "20px", fontWeight: 700, color: "#fff", textTransform: "uppercase", margin: "0 0 4px" }}>{b.namn}</p>
-                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px", margin: 0 }}>{b.email} · {b.telefon}</p>
+          <div style={{ display: "grid", gap: 12 }}>
+            {visade.length === 0 && <div className="card" style={{ textAlign: "center", padding: 40 }}><p className="dim">Inga bokningar matchar.</p></div>}
+            {visade.map((b) => {
+              const s = b.status || "väntar";
+              const ikon = TJANSTER.find((t) => t.titel === b.tjanst)?.ikon ?? "dack";
+              return (
+                <div key={b.id} className="row" style={{ ["--c" as string]: s === "bekräftad" ? "var(--ok)" : s === "avbokad" ? "var(--bad)" : s === "genomförd" ? "var(--line-2)" : "var(--warn)", alignItems: "center" }}>
+                  <DateBox datum={b.datum} />
+                  <div style={{ flex: "1 1 200px", minWidth: 0 }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      <strong className="h-display" style={{ fontSize: 21 }}>{b.namn}</strong>
+                      <StatusPill s={s} />
+                      {b.datum === idag && <span className="pill">Idag</span>}
+                    </div>
+                    <div className="small dim" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
+                      <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}><span className="ember"><TjanstIkon namn={ikon} size={14} /></span>{b.tjanst} · kl. {b.tid}</span>
+                      <span className="mono">{b.regnr}</span>
+                    </div>
+                    <div className="small muted" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 2 }}>
+                      <a href={`tel:${b.telefon}`} style={{ display: "inline-flex", gap: 5, alignItems: "center" }}><IconPhone size={13} />{b.telefon}</a>
+                      <a href={`mailto:${b.email}`} style={{ display: "inline-flex", gap: 5, alignItems: "center" }}><IconMail size={13} />{b.email}</a>
+                    </div>
                   </div>
-                  <div>
-                    <p style={{ color: "rgba(220,50,30,0.8)", fontSize: "13px", fontWeight: 600, margin: "0 0 4px" }}>{b.tjanst}</p>
-                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px", margin: 0 }}>🚗 {b.regnr}</p>
-                  </div>
-                  <div>
-                    <p style={{ color: "#fff", fontSize: "13px", margin: "0 0 4px" }}>📅 {b.datum}</p>
-                    <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", margin: 0 }}>🕐 kl. {b.tid}</p>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <button onClick={() => updateStatus(b.id, "bekräftad")}
-                      style={{ padding: "6px 14px", borderRadius: "4px", border: "none", cursor: "pointer", background: "rgba(34,197,94,0.15)", color: "rgba(34,197,94,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'Barlow', sans-serif" }}
-                    >✓ Bekräfta</button>
-                    <button onClick={() => updateStatus(b.id, "avbokad")}
-                      style={{ padding: "6px 14px", borderRadius: "4px", border: "none", cursor: "pointer", background: "rgba(255,100,100,0.1)", color: "rgba(255,100,100,0.7)", fontSize: "11px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", fontFamily: "'Barlow', sans-serif" }}
-                    >✕ Avboka</button>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {s === "väntar" && <button className="btn btn-primary btn-sm" onClick={() => satt(b.id, "bekräftad")}>Bekräfta</button>}
+                    {s === "bekräftad" && <button className="btn btn-ghost btn-sm" onClick={() => satt(b.id, "genomförd")}>Klar ✓</button>}
+                    {(s === "väntar" || s === "bekräftad") && <button className="btn btn-ghost btn-sm" style={{ color: "var(--bad)" }} onClick={() => satt(b.id, "avbokad")}>Avboka</button>}
+                    {(s === "avbokad" || s === "genomförd") && <button className="btn btn-ghost btn-sm" onClick={() => satt(b.id, "väntar")}>Återställ</button>}
                   </div>
                 </div>
-              </motion.div>
-            ))
-          )}
-        </div>
+              );
+            })}
+          </div>
+        </section>
       </div>
+      <style>{`@media (max-width: 1080px){ [data-admin]{ grid-template-columns: 1fr !important } [data-admin] > aside{ position: static !important } }`}</style>
     </main>
   );
 }

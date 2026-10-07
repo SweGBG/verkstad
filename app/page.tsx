@@ -1,279 +1,225 @@
-"use client";
+import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { FAQ, FORETAG, OMDOMEN, STATS, STEG, TJANSTER } from "./lib/data";
+import ServiceCard from "./components/service-card";
+import BookingForm from "./components/bookingform";
+import Counter from "./components/counter";
+import OpenStatus from "./components/open-status";
+import { TireArt } from "./components/logo";
+import { IconArrow, IconClock, IconPhone, IconPin, IconStar } from "./components/icons";
 
-const TJANSTER = [
-  { icon: "⚙", title: "Däckbyte", desc: "Sommar & vinterdäck. Snabb service — klar samma dag.", tid: "30 min" },
-  { icon: "🏨", title: "Däckhotell", desc: "Vi lagrar dina däck säkert mellan säsongerna.", tid: "Helårspris" },
-  { icon: "🔧", title: "Oljebyte", desc: "Motorolja, filter & kontroll. Alltid rätt olja för din bil.", tid: "45 min" },
-  { icon: "🔍", title: "Hjulinställning", desc: "Minskar slitage och förbättrar körkomfort.", tid: "60 min" },
-  { icon: "⚡", title: "Bromskontroll", desc: "Bromsar, skivor & belägg. Vi kollar allt.", tid: "30 min" },
-  { icon: "🛞", title: "Däcktryckstest", desc: "Rätt lufttryck sparar bränsle och ökar säkerheten.", tid: "15 min" },
-];
+const MARQUEE = ["Däckbyte 30 min", "Däckhotell", "Hjulinställning", "Oljebyte", "Bromskontroll", "Gratis lufttryck"];
 
-const STATS = [
-  { num: "93%", label: "Nöjda kunder" },
-  { num: "1 dag", label: "Leveranstid" },
-  { num: "15+", label: "Års erfarenhet" },
-  { num: "5★", label: "Google-betyg" },
-];
-
-const TJANST_HREF: Record<string, string> = {
-  "Däckbyte": "/tjanster/dackbyte",
-  "Däckhotell": "/tjanster/dackhotell",
-  "Oljebyte": "/tjanster/oljebyte",
-  "Hjulinställning": "/tjanster/hjulinstallning",
-  "Bromskontroll": "/tjanster/bromskontroll",
-  "Däcktryckstest": "/tjanster/dacktryckstest",
-};
-
-function ServiceCard({ s, i }: { s: typeof TJANSTER[0]; i: number }) {
-  const [hovered, setHovered] = useState(false);
+export default function Hem() {
   return (
-    <Link href={TJANST_HREF[s.title] || "/"} style={{ textDecoration: "none" }}>
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          background: hovered ? "rgba(220,50,30,0.08)" : "rgba(255,255,255,0.03)",
-          border: `1px solid ${hovered ? "rgba(220,50,30,0.4)" : "rgba(255,255,255,0.08)"}`,
-          borderRadius: "12px", padding: "28px 24px", cursor: "pointer",
-          transition: "all 0.3s ease", position: "relative", overflow: "hidden", height: "100%",
-        }}
-      >
-        {hovered && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.2), transparent)" }}
-          />
-        )}
-        <div style={{ fontSize: "28px", marginBottom: "12px" }}>{s.icon}</div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-          <h3 style={{ color: "#fff", fontSize: "17px", fontWeight: 600, margin: 0, fontFamily: "'Barlow Condensed', sans-serif", textTransform: "uppercase" }}>{s.title}</h3>
-          <span style={{ fontSize: "11px", color: "rgba(220,50,30,0.9)", background: "rgba(220,50,30,0.12)", padding: "3px 10px", borderRadius: "20px", fontWeight: 600, whiteSpace: "nowrap", marginLeft: "8px" }}>{s.tid}</span>
+    <main>
+      {/* ============ HERO ============ */}
+      <section className="hero">
+        <div className="hero-media">
+          <Image src="/images/hero.webp" alt="Bil på en glödande lyft i IronDäcks verkstad i skymningen" fill priority sizes="100vw" />
         </div>
-        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px", lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
-        <div style={{ marginTop: "16px", color: "rgba(220,50,30,0.6)", fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase" }}>Läs mer →</div>
-      </motion.div>
-    </Link>
-  );
-}
+        <div className="hero-glow" />
+        <div className="hero-shade" />
+        <TireArt className="hero-tire" />
 
-export default function VerkstadPage() {
-  const [skickad, setSkickad] = useState(false);
-
-  return (
-    <main style={{ minHeight: "100vh", background: "#0d0d0d", fontFamily: "'Barlow', sans-serif", overflowX: "hidden" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #0d0d0d; }
-        ::-webkit-scrollbar-thumb { background: rgba(220,50,30,0.5); border-radius: 2px; }
-        input, select { font-family: 'Barlow', sans-serif; }
-        ::placeholder { color: rgba(255,255,255,0.25); }
-        select option { background: #1a1a1a; color: #fff; }
-        
-        /* MOBILANPASSNING */
-        @media (max-width: 768px) {
-          .hero-section { padding: 80px 20px 60px 20px !important; min-height: 90vh !important; }
-          .hero-title { font-size: 48px !important; }
-          .hero-buttons { flex-direction: column !important; width: 100% !important; }
-          .hero-buttons a { width: 100% !important; text-align: center !important; }
-          .scroll-indicator { display: none !important; }
-          
-          .stats-section { padding: 40px 20px !important; }
-          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 24px !important; }
-          .stat-num { font-size: 40px !important; }
-          
-          .tjanster-section { padding: 60px 20px !important; }
-          .tjanster-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
-          .section-title { font-size: 40px !important; }
-          
-          .boka-section { padding: 60px 20px !important; }
-          .boka-form { padding: 32px 24px !important; }
-          .boka-form h2 { font-size: 32px !important; }
-          .form-grid { grid-template-columns: 1fr !important; }
-          
-          .footer-section { padding: 32px 20px !important; }
-          .footer-content { flex-direction: column !important; gap: 16px !important; text-align: center !important; }
-        }
-        
-        @media (min-width: 769px) and (max-width: 1024px) {
-          .hero-section { padding: 80px 40px !important; }
-          .stats-grid { gap: 32px !important; }
-          .tjanster-section { padding: 80px 40px !important; }
-          .tjanster-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .boka-section { padding: 80px 40px !important; }
-        }
-        
-        @media (min-width: 640px) and (max-width: 768px) {
-          .hero-buttons { flex-direction: row !important; }
-          .hero-buttons a { width: auto !important; flex: 1 !important; }
-        }
-      `}</style>
-
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, backgroundImage: "url('/images/verkstad_bg.png')", backgroundSize: "cover", backgroundPosition: "center", filter: "brightness(0.2) saturate(0.2)" }} />
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, background: "linear-gradient(180deg, rgba(13,13,13,0.85) 0%, rgba(13,13,13,0.7) 40%, rgba(13,13,13,0.9) 80%, #0d0d0d 100%)" }} />
-
-      <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0, pointerEvents: "none", opacity: 0.4 }}>
-        <defs>
-          <pattern id="hex2" x="0" y="0" width="60" height="69" patternUnits="userSpaceOnUse">
-            <polygon points="30,3 57,18 57,51 30,66 3,51 3,18" fill="none" stroke="rgba(220,50,30,0.07)" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#hex2)" />
-      </svg>
-
-      {[...Array(10)].map((_, i) => (
-        <motion.div key={i} animate={{ y: [0, -60, 0], opacity: [0, 0.3, 0] }} transition={{ duration: 5 + (i % 3), repeat: Infinity, delay: i * 0.8 }}
-          style={{ position: "fixed", left: `${5 + i * 10}%`, bottom: `${10 + (i % 4) * 12}%`, width: "2px", height: "2px", borderRadius: "50%", background: i % 2 === 0 ? "rgba(220,50,30,0.7)" : "rgba(255,255,255,0.2)", pointerEvents: "none", zIndex: 0 }}
-        />
-      ))}
-
-      {/* HERO */}
-      <section className="hero-section" style={{ position: "relative", zIndex: 1, minHeight: "100vh", display: "flex", alignItems: "center", padding: "0 60px" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", width: "100%", paddingTop: "80px" }}>
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.8 }} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" }}>
-            <div style={{ width: "40px", height: "1px", background: "rgba(220,50,30,0.7)" }} />
-            <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>Göteborg — Est. 2026</span>
-          </motion.div>
-          <motion.h1 className="hero-title" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "clamp(48px, 7vw, 88px)", fontWeight: 900, lineHeight: 0.95, color: "#fff", textTransform: "uppercase", letterSpacing: "-0.01em", marginBottom: "8px" }}
-          >
-            Säkra<br /><span style={{ color: "rgba(220,50,30,0.9)" }}>Däck</span><br />Varje<br />Säsong.
-          </motion.h1>
-          <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.9, duration: 0.8 }}
-            style={{ height: "2px", width: "80px", background: "linear-gradient(90deg, rgba(220,50,30,0.9), transparent)", marginBottom: "24px", transformOrigin: "left" }}
-          />
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0, duration: 0.7 }}
-            style={{ color: "rgba(255,255,255,0.5)", fontSize: "16px", lineHeight: 1.7, maxWidth: "420px", marginBottom: "40px" }}
-          >
-            Din lokala däckverkstad i Göteborg. Vi byter, lagrar och balanserar däck — snabbt, tryggt och utan krångel.
-          </motion.p>
-          <motion.div className="hero-buttons" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2, duration: 0.7 }} style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-            <motion.a href="#boka" whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(220,50,30,0.4)" }} whileTap={{ scale: 0.97 }}
-              style={{ background: "rgba(220,50,30,0.9)", color: "#fff", padding: "16px 36px", borderRadius: "6px", fontSize: "14px", fontWeight: 700, letterSpacing: "0.1em", textDecoration: "none", textTransform: "uppercase", display: "inline-block" }}
-            >Boka däckbyte</motion.a>
-            <motion.a href="#tjanster" whileHover={{ scale: 1.02 }}
-              style={{ background: "transparent", color: "rgba(255,255,255,0.7)", padding: "16px 36px", borderRadius: "6px", fontSize: "14px", fontWeight: 600, letterSpacing: "0.1em", textDecoration: "none", textTransform: "uppercase", display: "inline-block", border: "1px solid rgba(255,255,255,0.15)" }}
-            >Se tjänster</motion.a>
-          </motion.div>
+        <div className="wrap hero-content">
+          <span className="eyebrow hero-eyebrow">Däckverkstad · {FORETAG.ort}</span>
+          <h1 className="h-display h1">
+            <span className="line"><span style={{ ["--d" as string]: "0.15s" }}>Säkra däck.</span></span>
+            <span className="line"><span className="ember-grad" style={{ ["--d" as string]: "0.3s" }}>Varje säsong.</span></span>
+          </h1>
+          <p className="lead">
+            Däckbyte på 30 minuter, klimatsäkrat däckhotell och service du kan lita på. Boka online — vi har lyften varm.
+          </p>
+          <div className="hero-ctas">
+            <Link href="#boka" className="btn btn-primary">Boka däckbyte <IconArrow /></Link>
+            <Link href="#tjanster" className="btn btn-ghost">Se tjänster & priser</Link>
+          </div>
+          <div className="hero-meta">
+            <OpenStatus />
+            <div><IconPin size={16} /> Hisingsbacka, {FORETAG.ort}</div>
+            <div><span style={{ color: "var(--amber)", display: "inline-flex" }}><IconStar /></span> 4,9 på Google</div>
+          </div>
         </div>
-        <motion.div className="scroll-indicator" animate={{ y: [0, 8, 0], opacity: [0.4, 0.8, 0.4] }} transition={{ duration: 2, repeat: Infinity }}
-          style={{ position: "absolute", bottom: "40px", left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}
-        >
-          <span style={{ color: "rgba(255,255,255,0.25)", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase" }}>Scrolla</span>
-          <div style={{ width: "1px", height: "40px", background: "linear-gradient(180deg, rgba(220,50,30,0.6), transparent)" }} />
-        </motion.div>
+        <div className="scroll-cue">Scrolla</div>
       </section>
 
-      {/* STATS */}
-      <section className="stats-section" style={{ position: "relative", zIndex: 1, padding: "60px", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "40px" }}>
-            {STATS.map((s, i) => (
-              <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.6 }} style={{ textAlign: "center" }}>
-                <div className="stat-num" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "52px", fontWeight: 900, color: "rgba(220,50,30,0.9)", lineHeight: 1 }}>{s.num}</div>
-                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: "8px" }}>{s.label}</div>
-              </motion.div>
+      {/* ============ LÖPBAND ============ */}
+      <div className="marquee" aria-hidden="true">
+        <div className="marquee-track">
+          {[...MARQUEE, ...MARQUEE, ...MARQUEE, ...MARQUEE].map((m, i) => (
+            <span key={i} className="marquee-item">{m}<span className="sep" /></span>
+          ))}
+        </div>
+      </div>
+
+      {/* ============ STATS ============ */}
+      <section className="section-tight">
+        <div className="wrap">
+          <div className="stats reveal">
+            {STATS.map((s) => (
+              <div key={s.label} className="stat">
+                <div className="stat-num"><Counter to={s.num} decimaler={s.decimaler} suffix={s.suffix} /></div>
+                <div className="stat-label">{s.label}</div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* TJÄNSTER */}
-      <section id="tjanster" className="tjanster-section" style={{ position: "relative", zIndex: 1, padding: "100px 60px" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ marginBottom: "60px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-              <div style={{ width: "40px", height: "1px", background: "rgba(220,50,30,0.7)" }} />
-              <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>Vad vi gör</span>
+      {/* ============ TJÄNSTER ============ */}
+      <section id="tjanster" className="section" style={{ paddingTop: 60, scrollMarginTop: 40 }}>
+        <div className="wrap">
+          <div className="section-head reveal">
+            <div>
+              <span className="eyebrow">Vad vi gör</span>
+              <h2 className="h-display h2">Allt för <span className="ember">hjulen</span></h2>
             </div>
-            <h2 className="section-title" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "56px", fontWeight: 900, color: "#fff", textTransform: "uppercase" }}>Våra tjänster</h2>
-          </motion.div>
-          <div className="tjanster-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
-            {TJANSTER.map((s, i) => <ServiceCard key={s.title} s={s} i={i} />)}
+            <p className="dim" style={{ maxWidth: 380 }}>Fasta priser, inga överraskningar. Klicka på en tjänst för vad som ingår.</p>
+          </div>
+          <div className="grid g3">
+            {TJANSTER.map((t, i) => <ServiceCard key={t.slug} t={t} i={i} />)}
           </div>
         </div>
       </section>
 
-      {/* BOKA */}
-      <section id="boka" className="boka-section" style={{ position: "relative", zIndex: 1, padding: "100px 60px" }}>
-        <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-          <motion.div className="boka-form" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "56px 48px", position: "relative", overflow: "hidden" }}
-          >
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.8), transparent)" }} />
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-              <div style={{ width: "30px", height: "1px", background: "rgba(220,50,30,0.7)" }} />
-              <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>Bokningsformulär</span>
+      <div className="tread" />
+
+      {/* ============ DÄCKHOTELL ============ */}
+      <section className="section">
+        <div className="wrap split">
+          <div className="split-media reveal reveal-l">
+            <Image src="/images/hotel.webp" alt="Långa rader med däck i IronDäcks klimatkontrollerade däckhotell" fill sizes="(max-width: 900px) 100vw, 50vw" />
+            <div className="scan" />
+            <div className="media-badge">
+              <span className="h-display" style={{ fontSize: 40, lineHeight: 1 }}>1 200+</span>
+              <span className="small dim" style={{ lineHeight: 1.35 }}>däckset i förvar<br />just nu</span>
             </div>
-            <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "42px", fontWeight: 900, color: "#fff", textTransform: "uppercase", marginBottom: "8px" }}>Boka din tid</h2>
-            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "14px", marginBottom: "36px", lineHeight: 1.6 }}>Vi bekräftar din bokning via email inom 30 minuter.</p>
-            <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
-              {[
-                { label: "Namn", placeholder: "Anders Svensson", type: "text" },
-                { label: "Telefon", placeholder: "070-000 00 00", type: "tel" },
-                { label: "Email", placeholder: "anders@exempel.se", type: "email" },
-                { label: "Registreringsnummer", placeholder: "ABC 123", type: "text" },
-              ].map((f) => (
-                <div key={f.label}>
-                  <label style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>{f.label}</label>
-                  <input type={f.type} placeholder={f.placeholder}
-                    style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", padding: "12px 16px", color: "#fff", fontSize: "14px", outline: "none", transition: "border-color 0.2s" }}
-                    onFocus={e => e.currentTarget.style.borderColor = "rgba(220,50,30,0.6)"}
-                    onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
-                  />
-                </div>
-              ))}
+          </div>
+          <div className="reveal reveal-r">
+            <span className="eyebrow">Däckhotell</span>
+            <h2 className="h-display h2" style={{ margin: "18px 0 22px" }}>Dina däck<br /><span className="outline-text">bor bättre</span><br />hos oss</h2>
+            <p className="lead" style={{ marginBottom: 30 }}>
+              Ingen mer släpning till förrådet. Vi märker, tvättar, kontrollerar och förvarar dina däck i rätt temperatur — och sms:ar när det är dags att byta.
+            </p>
+            <ul className="checklist" style={{ marginBottom: 36 }}>
+              <li>Klimatkontrollerat och försäkrat mot stöld & brand</li>
+              <li>Mönsterdjup mäts och syns under Mina sidor</li>
+              <li>SMS-påminnelse när säsongen skiftar</li>
+            </ul>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <Link href="/tjanster/dackhotell" className="btn btn-primary">Från 495 kr/år <IconArrow /></Link>
+              <Link href="/medlem" className="btn btn-ghost">Se ditt däckhotell</Link>
             </div>
-            <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
-              <div>
-                <label style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Tjänst</label>
-                <select style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", padding: "12px 16px", color: "rgba(255,255,255,0.7)", fontSize: "14px", outline: "none" }}>
-                  <option value="">Välj tjänst...</option>
-                  {TJANSTER.map(t => <option key={t.title} value={t.title}>{t.title}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{ display: "block", color: "rgba(255,255,255,0.5)", fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Önskat datum</label>
-                <input type="date"
-                  style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", padding: "12px 16px", color: "rgba(255,255,255,0.7)", fontSize: "14px", outline: "none", colorScheme: "dark" }}
-                  onFocus={e => e.currentTarget.style.borderColor = "rgba(220,50,30,0.6)"}
-                  onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
-                />
-              </div>
-            </div>
-            <motion.button whileHover={{ scale: 1.02, boxShadow: "0 0 30px rgba(220,50,30,0.4)" }} whileTap={{ scale: 0.98 }} onClick={() => setSkickad(true)}
-              style={{ width: "100%", color: "#fff", border: "none", borderRadius: "6px", padding: "16px", fontSize: "14px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", cursor: "pointer", transition: "background 0.3s", background: skickad ? "rgba(34,197,94,0.8)" : "rgba(220,50,30,0.9)" }}
-            >
-              {skickad ? "✓ Bokning skickad!" : "Skicka bokning →"}
-            </motion.button>
-            {skickad && (
-              <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} style={{ color: "rgba(34,197,94,0.8)", fontSize: "13px", textAlign: "center", marginTop: "12px" }}>
-                Tack! Vi återkommer inom 30 minuter.
-              </motion.p>
-            )}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="footer-section" style={{ position: "relative", zIndex: 1, padding: "40px 60px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-        <div className="footer-content" style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "16px" }}>🛞</span>
-            <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "13px", fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>NordDäck Göteborg</span>
+      {/* ============ SÅ GÅR DET TILL ============ */}
+      <section className="section" style={{ background: "var(--bg-2)", borderBlock: "1px solid var(--line)" }}>
+        <div className="wrap">
+          <div className="section-head reveal">
+            <div>
+              <span className="eyebrow">Så funkar det</span>
+              <h2 className="h-display h2">Fyra steg. <span className="ember">Noll krångel.</span></h2>
+            </div>
           </div>
-          <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase" }}>GÖTEBORG — EST. 2026</span>
+          <div className="steps">
+            {STEG.map((s, i) => (
+              <div key={s.nr} className="step reveal" style={{ ["--d" as string]: `${i * 0.1}s` }}>
+                <div className="step-nr">{s.nr}</div>
+                <h3 className="h-display h3" style={{ marginBottom: 10 }}>{s.titel}</h3>
+                <p className="dim" style={{ fontSize: 15 }}>{s.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </footer>
+      </section>
+
+      {/* ============ BOKA ============ */}
+      <section id="boka" className="section" style={{ scrollMarginTop: 40 }}>
+        <div className="wrap split" style={{ alignItems: "start" }}>
+          <div className="reveal reveal-l sticky-col" style={{ position: "sticky", top: 110 }}>
+            <span className="eyebrow">Boka tid</span>
+            <h2 className="h-display h2" style={{ margin: "18px 0 22px" }}>Välj tid.<br /><span className="ember-grad">Vi fixar resten.</span></h2>
+            <p className="lead" style={{ marginBottom: 32 }}>Under en minut att boka. Du får bekräftelse direkt i inkorgen och ett SMS när bilen är klar.</p>
+            <div className="split-media" style={{ aspectRatio: "16 / 11", marginBottom: 28 }}>
+              <Image src="/images/mount.webp" alt="Mekaniker monterar ett vinterdäck" fill sizes="(max-width: 900px) 100vw, 45vw" style={{ objectPosition: "50% 40%" }} />
+            </div>
+            <div className="grid" style={{ gap: 14 }}>
+              <a href={FORETAG.telefonHref} className="dim" style={{ display: "flex", gap: 12, alignItems: "center" }}><span className="ember"><IconPhone /></span> Hellre ringa? {FORETAG.telefon}</a>
+              <div className="dim" style={{ display: "flex", gap: 12, alignItems: "center" }}><span className="ember"><IconClock /></span> Mån–fre 07–18 · Lör 08–14</div>
+            </div>
+          </div>
+          <div className="reveal reveal-r">
+            <BookingForm />
+          </div>
+        </div>
+      </section>
+
+      {/* ============ OMDÖMEN ============ */}
+      <section className="section" style={{ paddingTop: 40 }}>
+        <div className="wrap">
+          <div className="section-head reveal">
+            <div>
+              <span className="eyebrow">Omdömen</span>
+              <h2 className="h-display h2">Göteborgarna <span className="ember">säger</span></h2>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span className="h-display" style={{ fontSize: 56, lineHeight: 1 }}>4,9</span>
+              <span>
+                <span className="stars">{Array.from({ length: 5 }, (_, i) => <IconStar key={i} />)}</span>
+                <span className="small muted">Exempelomdömen (demo)</span>
+              </span>
+            </div>
+          </div>
+          <div className="grid g3">
+            {OMDOMEN.map((o, i) => (
+              <figure key={o.namn} className="card card-glow quote reveal" style={{ ["--d" as string]: `${i * 0.1}s` }}>
+                <span className="stars">{Array.from({ length: 5 }, (_, j) => <IconStar key={j} />)}</span>
+                <p>”{o.text}”</p>
+                <figcaption className="quote-by">
+                  <span className="quote-av">{o.namn[0]}</span>
+                  <span><strong>{o.namn}</strong><br /><span className="muted">{o.ort}</span></span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ FAQ ============ */}
+      <section className="section" style={{ paddingTop: 40 }}>
+        <div className="wrap wrap-sm">
+          <div className="reveal" style={{ marginBottom: 36 }}>
+            <span className="eyebrow">Vanliga frågor</span>
+            <h2 className="h-display h2" style={{ marginTop: 18 }}>Bra att veta</h2>
+          </div>
+          <div className="faq reveal">
+            {FAQ.map((f) => (
+              <details key={f.q}>
+                <summary>{f.q}<span className="plus" /></summary>
+                <p className="ans">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ CTA ============ */}
+      <section className="section" style={{ paddingTop: 20 }}>
+        <div className="wrap">
+          <div className="cta-band reveal">
+            <span className="eyebrow">Vintersäsongen är här</span>
+            <h2 className="h-display h2" style={{ margin: "18px 0 16px", maxWidth: 760 }}>Slå köerna. Boka vinterdäcken <span className="ember-grad">idag.</span></h2>
+            <p className="lead" style={{ marginBottom: 32 }}>Lediga tider redan i morgon bitti. Lufttrycket kollar vi gratis på köpet.</p>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <Link href="#boka" className="btn btn-primary">Boka tid <IconArrow /></Link>
+              <a href={FORETAG.telefonHref} className="btn btn-ghost"><IconPhone /> {FORETAG.telefon}</a>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

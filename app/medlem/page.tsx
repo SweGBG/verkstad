@@ -1,158 +1,116 @@
 "use client";
-import { useState } from "react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/utils/supabase";
+import { createClient, supabaseKonfigurerad } from "@/utils/supabase";
+import { setDemo } from "../lib/demo";
+import { useAuth } from "../lib/useAuth";
+import { IconArrow, IconShield, IconUser } from "../components/icons";
 
-export default function MedlemPage() {
-  const [tab, setTab] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [namn, setNamn] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+type Flik = "login" | "register";
+
+export default function Medlem() {
   const router = useRouter();
-  const supabase = createClient();
+  const { user, klar } = useAuth();
+  const [flik, setFlik] = useState<Flik>("login");
+  const [namn, setNamn] = useState("");
+  const [email, setEmail] = useState("");
+  const [losen, setLosen] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fel, setFel] = useState("");
+  const [ok, setOk] = useState("");
 
-  const handleLogin = async () => {
+  // Läs ?flik=registrera från adressfältet
+  useEffect(() => {
+    const las = () => { if (new URLSearchParams(window.location.search).get("flik") === "registrera") setFlik("register"); };
+    las();
+  }, []);
+
+  useEffect(() => {
+    if (klar && user) router.replace(user.admin ? "/admin" : "/konto");
+  }, [klar, user, router]);
+
+  const byt = (f: Flik) => { setFlik(f); setFel(""); setOk(""); };
+
+  const skicka = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFel(""); setOk("");
+    if (!email || !losen || (flik === "register" && !namn)) return setFel("Fyll i alla fält.");
+    if (losen.length < 6) return setFel("Lösenordet måste vara minst 6 tecken.");
+    if (!supabaseKonfigurerad) return setFel("Inloggning är inte kopplad ännu (Supabase saknas). Testa demokontot nedan!");
     setLoading(true);
-    setError("");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError("Fel email eller lösenord.");
-    else router.push("/konto");
+    const sb = createClient();
+    if (flik === "login") {
+      const { error } = await sb.auth.signInWithPassword({ email, password: losen });
+      if (error) setFel("Fel e-post eller lösenord.");
+      else router.push("/konto");
+    } else {
+      const { error } = await sb.auth.signUp({ email, password: losen, options: { data: { full_name: namn } } });
+      if (error) setFel(error.message);
+      else setOk("Konto skapat! Kolla din e-post för att bekräfta.");
+    }
     setLoading(false);
   };
 
-  const handleRegister = async () => {
-    setLoading(true);
-    setError("");
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { full_name: namn } }
-    });
-    if (error) setError(error.message);
-    else setSuccess("Konto skapat! Kolla din email för bekräftelse.");
-    setLoading(false);
+  const demo = (roll: "kund" | "admin") => {
+    setDemo(roll);
+    router.push(roll === "admin" ? "/admin" : "/konto");
   };
 
   return (
-    <main style={{ minHeight: "100vh", background: "#0d0d0d", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", fontFamily: "'Barlow', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600&display=swap');`}</style>
-
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, backgroundImage: "url('/images/verkstad_bg.png')", backgroundSize: "cover", backgroundPosition: "center", filter: "brightness(0.15) saturate(0.2)" }} />
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, background: "linear-gradient(180deg, rgba(13,13,13,0.9) 0%, rgba(13,13,13,0.8) 100%)" }} />
-
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "440px" }}
-      >
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <div style={{ fontSize: "32px", marginBottom: "8px" }}>🛞</div>
-          <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "32px", fontWeight: 900, color: "#fff", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>
-            Nord<span style={{ color: "rgba(220,50,30,0.9)" }}>Däck</span>
-          </h1>
-          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: "4px" }}>Göteborg — Est. 2009</p>
+    <main className="auth">
+      <div className="auth-media">
+        <Image src="/images/hotel.webp" alt="" fill priority sizes="55vw" />
+        <div className="auth-quote">
+          <span className="eyebrow">Mina sidor</span>
+          <h2 className="h-display h2" style={{ margin: "16px 0 14px" }}>Ditt garage.<br /><span className="ember-grad">Alltid öppet.</span></h2>
+          <ul className="checklist">
+            <li>Se och boka om dina tider</li>
+            <li>Mönsterdjup och hyllplats för dina däck i hotellet</li>
+            <li>Alla dina bilar och däckdimensioner på ett ställe</li>
+          </ul>
         </div>
+      </div>
 
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", overflow: "hidden", position: "relative" }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.8), transparent)" }} />
+      <div className="auth-panel">
+        <div className="auth-box" style={{ animation: "fadeUp .8s var(--ease) both" }}>
+          <h1 className="h-display" style={{ fontSize: 52, lineHeight: 0.95, marginBottom: 10 }}>
+            {flik === "login" ? <>Välkommen <span className="ember">tillbaka</span></> : <>Skapa <span className="ember">konto</span></>}
+          </h1>
+          <p className="dim" style={{ marginBottom: 28 }}>
+            {flik === "login" ? "Logga in för att se bokningar, garage och däckhotell." : "Det tar 20 sekunder. Sen sparas dina bilar och bokningar."}
+          </p>
 
-          {/* Tabs */}
-          <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            {(["login", "register"] as const).map((t) => (
-              <button key={t} onClick={() => { setTab(t); setError(""); setSuccess(""); }}
-                style={{
-                  flex: 1, padding: "16px", border: "none", cursor: "pointer",
-                  background: tab === t ? "rgba(220,50,30,0.08)" : "transparent",
-                  color: tab === t ? "rgba(220,50,30,0.9)" : "rgba(255,255,255,0.3)",
-                  fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em",
-                  textTransform: "uppercase", fontFamily: "'Barlow', sans-serif",
-                  borderBottom: tab === t ? "1px solid rgba(220,50,30,0.5)" : "none",
-                  transition: "all 0.2s",
-                }}
-              >
-                {t === "login" ? "Logga in" : "Skapa konto"}
+          <div className="tabs" style={{ marginBottom: 24, width: "100%" }}>
+            {(["login", "register"] as Flik[]).map((f) => (
+              <button key={f} type="button" aria-pressed={flik === f} onClick={() => byt(f)} style={{ flex: 1 }}>
+                {f === "login" ? "Logga in" : "Skapa konto"}
               </button>
             ))}
           </div>
 
-          {/* Form */}
-          <div style={{ padding: "32px" }}>
-            <AnimatePresence mode="wait">
-              <motion.div key={tab} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
-                {tab === "register" && (
-                  <div style={{ marginBottom: "16px" }}>
-                    <label style={labelStyle}>Namn</label>
-                    <input value={namn} onChange={e => setNamn(e.target.value)} placeholder="Anders Svensson" style={inputStyle}
-                      onFocus={e => e.currentTarget.style.borderColor = "rgba(220,50,30,0.6)"}
-                      onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
-                    />
-                  </div>
-                )}
-                <div style={{ marginBottom: "16px" }}>
-                  <label style={labelStyle}>Email</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="anders@exempel.se" style={inputStyle}
-                    onFocus={e => e.currentTarget.style.borderColor = "rgba(220,50,30,0.6)"}
-                    onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
-                  />
-                </div>
-                <div style={{ marginBottom: "24px" }}>
-                  <label style={labelStyle}>Lösenord</label>
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" style={inputStyle}
-                    onFocus={e => e.currentTarget.style.borderColor = "rgba(220,50,30,0.6)"}
-                    onBlur={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}
-                  />
-                </div>
+          <form onSubmit={skicka} noValidate style={{ display: "grid", gap: 14 }}>
+            {flik === "register" && (
+              <div><label className="label" htmlFor="m-namn">Namn</label><input id="m-namn" className="input" autoComplete="name" value={namn} onChange={(e) => setNamn(e.target.value)} placeholder="Anders Svensson" /></div>
+            )}
+            <div><label className="label" htmlFor="m-mail">E-post</label><input id="m-mail" className="input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="anders@exempel.se" /></div>
+            <div><label className="label" htmlFor="m-pw">Lösenord</label><input id="m-pw" className="input" type="password" autoComplete={flik === "login" ? "current-password" : "new-password"} value={losen} onChange={(e) => setLosen(e.target.value)} placeholder="••••••••" /></div>
+            {fel && <p className="alert alert-bad" role="alert">{fel}</p>}
+            {ok && <p className="alert alert-ok" role="status">{ok}</p>}
+            <button className="btn btn-primary btn-block" disabled={loading} style={{ marginTop: 6 }}>
+              {loading ? "Vänta…" : <>{flik === "login" ? "Logga in" : "Skapa konto"} <IconArrow /></>}
+            </button>
+          </form>
 
-                {error && (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ color: "rgba(220,50,30,0.9)", fontSize: "13px", marginBottom: "16px", textAlign: "center" }}>
-                    ⚠ {error}
-                  </motion.p>
-                )}
-                {success && (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ color: "rgba(34,197,94,0.9)", fontSize: "13px", marginBottom: "16px", textAlign: "center" }}>
-                    ✓ {success}
-                  </motion.p>
-                )}
+          <div className="divider">eller testa direkt</div>
 
-                <motion.button
-                  whileHover={{ scale: 1.02, boxShadow: "0 0 30px rgba(220,50,30,0.4)" }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={tab === "login" ? handleLogin : handleRegister}
-                  disabled={loading}
-                  style={{
-                    width: "100%", background: loading ? "rgba(220,50,30,0.5)" : "rgba(220,50,30,0.9)",
-                    color: "#fff", border: "none", borderRadius: "6px", padding: "14px",
-                    fontSize: "13px", fontWeight: 700, letterSpacing: "0.12em",
-                    textTransform: "uppercase", cursor: loading ? "not-allowed" : "pointer",
-                    fontFamily: "'Barlow', sans-serif",
-                  }}
-                >
-                  {loading ? "Laddar..." : tab === "login" ? "Logga in →" : "Skapa konto →"}
-                </motion.button>
-              </motion.div>
-            </AnimatePresence>
+          <div className="grid g2" style={{ gap: 10 }}>
+            <button type="button" className="btn btn-ghost" onClick={() => demo("kund")}><IconUser size={16} /> Demokund</button>
+            <button type="button" className="btn btn-ghost" onClick={() => demo("admin")}><IconShield size={16} /> Demo-admin</button>
           </div>
+          <p className="small muted" style={{ marginTop: 14, textAlign: "center" }}>Demokonton visar exempeldata — inget sparas.</p>
         </div>
-      </motion.div>
+      </div>
     </main>
   );
 }
-
-const labelStyle: React.CSSProperties = {
-  display: "block", color: "rgba(255,255,255,0.4)",
-  fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em",
-  textTransform: "uppercase", marginBottom: "8px",
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%", background: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px",
-  padding: "12px 16px", color: "#fff", fontSize: "14px",
-  outline: "none", transition: "border-color 0.2s",
-  fontFamily: "'Barlow', sans-serif",
-};

@@ -1,168 +1,151 @@
 "use client";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { LogoMark } from "./logo";
+import { IconArrow, IconCalendar, IconGrid, IconLogout, IconMenu, IconShield, IconUser } from "./icons";
+import { useAuth } from "../lib/useAuth";
+import { FORETAG } from "../lib/data";
 
-const ADMIN_EMAIL = "lenn.soder@protonmail.com";
+const LANKAR = [
+  { label: "Tjänster", href: "/#tjanster" },
+  { label: "Däckhotell", href: "/tjanster/dackhotell" },
+  { label: "Priser", href: "/priser" },
+  { label: "Om oss", href: "/om" },
+  { label: "Kontakt", href: "/kontakt" },
+];
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const router = useRouter();
   const pathname = usePathname();
-  const supabase = createClient();
-  const isHome = pathname === "/";
+  const router = useRouter();
+  const { user, loggaUt } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [drop, setDrop] = useState(false);
+  const dropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll);
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    const onClick = (e: MouseEvent) => {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setDrop(false);
     };
-    getUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('[data-dropdown]')) setDropdownOpen(false);
-    };
-    document.addEventListener("mousedown", handleClickOutside);
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { setDrop(false); setMenu(false); } };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("scroll", onScroll);
-      subscription.unsubscribe();
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
     };
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+  // Stäng menyer vid sidbyte
+  const [senasteSida, setSenasteSida] = useState(pathname);
+  if (senasteSida !== pathname) {
+    setSenasteSida(pathname);
+    setMenu(false);
+    setDrop(false);
+  }
+
+  useEffect(() => {
+    document.body.style.overflow = menu ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menu]);
+
+  const ut = async () => {
+    await loggaUt();
+    setDrop(false);
     router.push("/");
   };
 
-  const handleLogoClick = (e: React.MouseEvent) => {
-    if (isHome) {
-      e.preventDefault();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
+  const aktiv = (href: string) => !href.includes("#") && pathname.startsWith(href);
+  const initialer = (user?.namn || "?").split(/\s+/).filter((w) => /^\p{L}/u.test(w)).map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "?";
 
-  const linkStyle = {
-    color: "rgba(255,255,255,0.55)", fontSize: "13px", fontWeight: 500,
-    letterSpacing: "0.08em", textDecoration: "none", textTransform: "uppercase" as const,
-    transition: "color 0.2s",
-  };
+  // Auth-sidan har egen layout
+  const doljLankar = pathname === "/medlem";
 
   return (
-    <motion.nav
-      initial={{ y: -88, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        padding: "0 40px", height: "72px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: scrolled ? "rgba(13,13,13,0.95)" : "rgba(13,13,13,0.6)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        backdropFilter: "blur(20px)",
-        transition: "all 0.4s ease",
-        fontFamily: "'Barlow', sans-serif",
-      }}
-    >
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600;700&display=swap');`}</style>
+    <>
+      <nav className={`nav ${scrolled || menu ? "scrolled" : ""}`}>
+        <div className="wrap nav-inner">
+          <Link href="/" className="logo" aria-label={`${FORETAG.namn} — startsida`}>
+            <LogoMark />
+            <span>
+              <span className="logo-text">Iron<span className="ember">Däck</span></span>
+              <span className="logo-sub">Däckverkstad · {FORETAG.ort}</span>
+            </span>
+          </Link>
 
-      {/* LOGO */}
-      <Link href="/" onClick={handleLogoClick} style={{ textDecoration: "none" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
-          <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(220,50,30,0.15)", border: "1px solid rgba(220,50,30,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>🛞</div>
-          <span style={{ color: "#fff", fontSize: "18px", fontWeight: 800, letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif", textTransform: "uppercase" }}>
-            IronDäck<span style={{ color: "rgba(220,50,30,0.9)" }}>.</span>
-          </span>
+          {!doljLankar && (
+            <div className="nav-links">
+              {LANKAR.map((l) => (
+                <Link key={l.href} href={l.href} className={`nav-link ${aktiv(l.href) ? "active" : ""}`}>{l.label}</Link>
+              ))}
+            </div>
+          )}
+
+          <div className="nav-right">
+            <div ref={dropRef} style={{ position: "relative" }}>
+              {user ? (
+                <button className="avatar" onClick={() => setDrop((v) => !v)} aria-label="Konto" aria-expanded={drop}>{initialer}</button>
+              ) : (
+                <button className="icon-btn" onClick={() => setDrop((v) => !v)} aria-label="Konto" aria-expanded={drop}><IconUser /></button>
+              )}
+              {drop && (
+                <div className="dropdown" role="menu">
+                  {user ? (
+                    <>
+                      <div className="dropdown-head">
+                        <div style={{ fontWeight: 700 }}>{user.namn}</div>
+                        <div className="small muted">{user.email}</div>
+                        {user.demo && <span className="pill pill-warn" style={{ marginTop: 8 }}>Demoläge</span>}
+                      </div>
+                      <Link href="/konto"><IconGrid size={16} /> Mina sidor</Link>
+                      <Link href="/konto?flik=bokningar"><IconCalendar size={16} /> Mina bokningar</Link>
+                      {user.admin && <Link href="/admin" style={{ color: "var(--ember-2)" }}><IconShield size={16} /> Admin</Link>}
+                      <button onClick={ut} style={{ color: "var(--bad)" }}><IconLogout size={16} /> Logga ut</button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="dropdown-head">
+                        <div style={{ fontWeight: 700 }}>Mina sidor</div>
+                        <div className="small muted">Bokningar, garage & däckhotell</div>
+                      </div>
+                      <Link href="/medlem"><IconUser size={16} /> Logga in</Link>
+                      <Link href="/medlem?flik=registrera"><IconArrow size={16} className="" /> Skapa konto</Link>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            <Link href="/#boka" className="btn btn-primary btn-sm">Boka tid</Link>
+            <button className="icon-btn burger" onClick={() => setMenu((v) => !v)} aria-label="Meny" aria-expanded={menu}>
+              <IconMenu open={menu} />
+            </button>
+          </div>
         </div>
-      </Link>
+      </nav>
 
-      {/* LÄNKAR */}
-      <div style={{ display: "flex", gap: "32px", alignItems: "center" }}>
-        <a href={isHome ? "#tjanster" : "/#tjanster"} style={linkStyle}
-          onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
-          onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
-        >Tjänster</a>
-
-        {[
-          { label: "Om oss", href: "/om" },
-          { label: "Priser", href: "/priser" },
-          { label: "Kontakt", href: "/kontakt" },
-        ].map((item) => (
-          <Link key={item.label} href={item.href} style={linkStyle}
-            onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
-            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}
-          >{item.label}</Link>
-        ))}
-
-        {/* KONTO DROPDOWN */}
-        <div data-dropdown style={{ position: "relative" }}>
-          <div onClick={() => setDropdownOpen(!dropdownOpen)}
-            style={{ width: "36px", height: "36px", border: "1px solid rgba(220,50,30,0.4)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.7)", fontSize: "15px", cursor: "pointer", background: "rgba(220,50,30,0.08)", transition: "all 0.2s" }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(220,50,30,0.8)")}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(220,50,30,0.4)")}
-          >👤</div>
-          <AnimatePresence>
-            {dropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                style={{ position: "absolute", top: "48px", right: 0, background: "#0d0d0d", border: "1px solid rgba(220,50,30,0.2)", borderRadius: "10px", overflow: "hidden", minWidth: "180px", zIndex: 200 }}
-              >
-                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.6), transparent)" }} />
-                {user ? (
-                  <>
-                    <Link href="/konto" onClick={() => setDropdownOpen(false)} style={{ textDecoration: "none" }}>
-                      <div style={{ padding: "12px 16px", color: "rgba(255,255,255,0.65)", fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: "pointer", transition: "all 0.2s" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,50,30,0.08)"; e.currentTarget.style.color = "#fff"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.65)"; }}
-                      >🛞 Mina bokningar</div>
-                    </Link>
-                    {user.email === ADMIN_EMAIL && (
-                      <Link href="/admin" onClick={() => setDropdownOpen(false)} style={{ textDecoration: "none" }}>
-                        <div style={{ padding: "12px 16px", color: "rgba(220,50,30,0.8)", fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: "pointer", transition: "all 0.2s" }}
-                          onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,50,30,0.08)"; e.currentTarget.style.color = "#fff"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(220,50,30,0.8)"; }}
-                        >⚙ Admin</div>
-                      </Link>
-                    )}
-                    <div onClick={handleLogout}
-                      style={{ padding: "12px 16px", color: "rgba(255,100,100,0.6)", fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,100,100,0.06)"; e.currentTarget.style.color = "rgba(255,100,100,0.9)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,100,100,0.6)"; }}
-                    >Logga ut</div>
-                  </>
-                ) : (
-                  <Link href="/medlem" onClick={() => setDropdownOpen(false)} style={{ textDecoration: "none" }}>
-                    <div style={{ padding: "12px 16px", color: "rgba(220,50,30,0.8)", fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,50,30,0.08)"; e.currentTarget.style.color = "#fff"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(220,50,30,0.8)"; }}
-                    >Logga in</div>
-                  </Link>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+      {menu && (
+        <div className="mobile-menu">
+          {LANKAR.map((l, i) => (
+            <Link key={l.href} href={l.href} className="big" style={{ animationDelay: `${0.05 + i * 0.06}s` }} onClick={() => setMenu(false)}>
+              {l.label}
+            </Link>
+          ))}
+          <Link href={user ? "/konto" : "/medlem"} className="big" style={{ animationDelay: "0.4s", color: "var(--dim)" }} onClick={() => setMenu(false)}>
+            {user ? "Mina sidor" : "Logga in"}
+          </Link>
+          <Link href="/#boka" className="btn btn-primary" style={{ marginTop: 36 }} onClick={() => setMenu(false)}>
+            Boka tid <IconArrow />
+          </Link>
+          <a href={FORETAG.telefonHref} className="small muted" style={{ marginTop: 22, textAlign: "center" }}>
+            eller ring {FORETAG.telefon}
+          </a>
         </div>
-
-        <motion.a
-          href={isHome ? "#boka" : "/#boka"}
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.97 }}
-          style={{ background: "rgba(220,50,30,0.9)", color: "#fff", padding: "10px 22px", borderRadius: "6px", fontSize: "13px", fontWeight: 700, letterSpacing: "0.08em", textDecoration: "none", textTransform: "uppercase" }}
-        >Boka tid</motion.a>
-      </div>
-    </motion.nav>
+      )}
+    </>
   );
 }

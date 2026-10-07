@@ -1,104 +1,116 @@
-"use client";
-import { motion } from "framer-motion";
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import PageHero from "../components/page-hero";
+import { FORETAG, STATS, TEAM, VARDERINGAR } from "../lib/data";
+import Counter from "../components/counter";
+import { IconArrow } from "../components/icons";
 
-const TEAM = [
-  { namn: "Erik Lindqvist", roll: "Grundare & Mekaniker", år: "15 års erfarenhet", emoji: "🔧" },
-  { namn: "Jonas Bergström", roll: "Däckspecialist", år: "10 års erfarenhet", emoji: "🛞" },
-  { namn: "Sara Nilsson", roll: "Kundansvarig", år: "8 års erfarenhet", emoji: "⭐" },
-];
+export const metadata: Metadata = {
+  title: "Om oss",
+  description: "IronDäck är en lokalt ägd däckverkstad i Göteborg. Ärligt hantverk, fasta priser och tider som hålls.",
+};
 
-const VÄRDEN = [
-  { titel: "Ärlighet", text: "Vi säger som det är. Inget onödigt — bara det din bil faktiskt behöver." },
-  { titel: "Snabbhet", text: "Din tid är värdefull. Vi håller tider och levererar samma dag." },
-  { titel: "Kvalitet", text: "Vi använder bara märkesdäck och original reservdelar." },
-  { titel: "Göteborg", text: "Lokalt ägd sedan 2026. Vi känner våra kunder vid namn." },
-];
-
-export default function OmPage() {
+export default function Om() {
   return (
-    <main style={{ minHeight: "100vh", background: "#0d0d0d", fontFamily: "'Barlow', sans-serif", overflowX: "hidden" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap');`}</style>
+    <main>
+      <PageHero
+        eyebrow={`${FORETAG.ort} · Est. ${FORETAG.grundat}`}
+        titel={<>Om <span className="ember-grad">oss</span></>}
+        text={`${FORETAG.namn} grundades ${FORETAG.grundat} med en enkel idé — ge Göteborgs bilister en verkstad de kan lita på. Inga dolda avgifter, inga onödiga reparationer. Bara hederligt arbete till rätt pris.`}
+        crumbs={[{ label: "Om oss" }]}
+      />
 
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, backgroundImage: "url('/images/verkstad_bg.png')", backgroundSize: "cover", backgroundPosition: "center", filter: "brightness(0.15) saturate(0.2)" }} />
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, background: "linear-gradient(180deg, rgba(13,13,13,0.9) 0%, rgba(13,13,13,0.8) 100%)" }} />
-      <svg style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0, pointerEvents: "none", opacity: 0.4 }}>
-        <defs><pattern id="hex" x="0" y="0" width="60" height="69" patternUnits="userSpaceOnUse"><polygon points="30,3 57,18 57,51 30,66 3,51 3,18" fill="none" stroke="rgba(220,50,30,0.07)" strokeWidth="0.5" /></pattern></defs>
-        <rect width="100%" height="100%" fill="url(#hex)" />
-      </svg>
-
-      <div style={{ position: "relative", zIndex: 1, maxWidth: "1000px", margin: "0 auto", padding: "120px 24px 80px" }}>
-
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-            style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "rgba(255,255,255,0.3)", fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "48px", cursor: "pointer" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "rgba(220,50,30,0.8)")}
-            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.3)")}
-          >← Tillbaka</motion.div>
-        </Link>
-
-        {/* HERO */}
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} style={{ marginBottom: "80px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-            <div style={{ width: "40px", height: "1px", background: "rgba(220,50,30,0.7)" }} />
-            <span style={{ color: "rgba(220,50,30,0.9)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>IronDäck — Göteborg Est. 2009</span>
+      <section className="section">
+        <div className="wrap split">
+          <div className="split-media reveal reveal-l">
+            <Image src="/images/mount.webp" alt="Mekaniker hos IronDäck" fill sizes="(max-width: 900px) 100vw, 50vw" />
           </div>
-          <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "clamp(56px, 8vw, 96px)", fontWeight: 900, color: "#fff", textTransform: "uppercase", lineHeight: 0.95, marginBottom: "24px" }}>
-            Om<br /><span style={{ color: "rgba(220,50,30,0.9)" }}>oss</span>
-          </h1>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "17px", lineHeight: 1.8, maxWidth: "600px" }}>
-            IronDäck grundades 2026 med en enkel idé — ge Göteborgs bilister en verkstad de kan lita på. Inga dolda avgifter, inga onödiga reparationer. Bara hederligt arbete till rätt pris.
-          </p>
-        </motion.div>
+          <div className="reveal reveal-r">
+            <span className="eyebrow">Vår historia</span>
+            <h2 className="h-display h2" style={{ margin: "18px 0 24px" }}>Smutsiga händer.<br /><span className="outline-text">Rena besked.</span></h2>
+            <p className="lead" style={{ marginBottom: 18 }}>
+              Vi startade i en lånad lokal med en lyft och en balanseringsmaskin. I dag har vi en ljus verkstad i Hisingsbacka med plats för fyra bilar samtidigt och ett däckhotell med över tusen set.
+            </p>
+            <p className="dim">
+              Det som inte har ändrats är hur vi jobbar: vi visar slitaget, förklarar vad som behöver göras och låter dig bestämma. Hellre en nöjd kund som kommer tillbaka än en dyr faktura.
+            </p>
+          </div>
+        </div>
+      </section>
 
-        {/* VÄRDEN */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ marginBottom: "80px" }}>
-          <p style={{ fontSize: "11px", letterSpacing: "6px", color: "rgba(220,50,30,0.5)", textTransform: "uppercase", marginBottom: "24px" }}>Våra värderingar</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
-            {VÄRDEN.map((v, i) => (
-              <motion.div key={v.titel} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }}
-                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "24px", position: "relative", overflow: "hidden" }}
-              >
-                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.4), transparent)" }} />
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "20px", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: "8px" }}>{v.titel}</p>
-                <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px", lineHeight: 1.7 }}>{v.text}</p>
-              </motion.div>
+      <section className="section-tight">
+        <div className="wrap">
+          <div className="stats reveal">
+            {STATS.map((s) => (
+              <div key={s.label} className="stat">
+                <div className="stat-num"><Counter to={s.num} decimaler={s.decimaler} suffix={s.suffix} /></div>
+                <div className="stat-label">{s.label}</div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
+      </section>
 
-        {/* TEAM */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} style={{ marginBottom: "80px" }}>
-          <p style={{ fontSize: "11px", letterSpacing: "6px", color: "rgba(220,50,30,0.5)", textTransform: "uppercase", marginBottom: "24px" }}>Teamet</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+      <section className="section">
+        <div className="wrap">
+          <div className="section-head reveal">
+            <div>
+              <span className="eyebrow">Värderingar</span>
+              <h2 className="h-display h2">Det vi <span className="ember">står för</span></h2>
+            </div>
+          </div>
+          <div className="grid g4">
+            {VARDERINGAR.map((v, i) => (
+              <div key={v.titel} className="card card-hover card-glow reveal" style={{ ["--d" as string]: `${i * 0.08}s` }}>
+                <span className="h-display outline-text" style={{ fontSize: 56, lineHeight: 1 }}>{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="h-display h3" style={{ margin: "18px 0 10px" }}>{v.titel}</h3>
+                <p className="dim" style={{ fontSize: 15 }}>{v.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section" style={{ background: "var(--bg-2)", borderBlock: "1px solid var(--line)" }}>
+        <div className="wrap">
+          <div className="section-head reveal">
+            <div>
+              <span className="eyebrow">Teamet</span>
+              <h2 className="h-display h2">Folket bakom <span className="ember">lyften</span></h2>
+            </div>
+          </div>
+          <div className="grid g3">
             {TEAM.map((p, i) => (
-              <motion.div key={p.namn} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.1 }}
-                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "28px 24px", textAlign: "center", position: "relative", overflow: "hidden" }}
-              >
-                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, transparent, rgba(220,50,30,0.4), transparent)" }} />
-                <div style={{ fontSize: "36px", marginBottom: "16px" }}>{p.emoji}</div>
-                <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "18px", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: "4px" }}>{p.namn}</p>
-                <p style={{ color: "rgba(220,50,30,0.8)", fontSize: "12px", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "8px" }}>{p.roll}</p>
-                <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px" }}>{p.år}</p>
-              </motion.div>
+              <div key={p.namn} className="card card-hover reveal" style={{ ["--d" as string]: `${i * 0.08}s`, textAlign: "center", padding: "40px 28px" }}>
+                <div style={{ width: 110, height: 110, margin: "0 auto 22px", borderRadius: "50%", display: "grid", placeItems: "center", position: "relative", background: "radial-gradient(circle at 30% 30%, #2a2a2e, #141416)", border: "1px solid var(--line-2)" }}>
+                  <svg viewBox="0 0 120 120" style={{ position: "absolute", inset: -6, width: 122, height: 122 }} aria-hidden="true">
+                    <circle cx="60" cy="60" r="57" fill="none" stroke="url(#teamg)" strokeWidth="2" strokeDasharray="6 10" className="spin-slow" />
+                    <defs><linearGradient id="teamg"><stop offset="0" stopColor="#e2401f" /><stop offset="1" stopColor="#ffad4a" /></linearGradient></defs>
+                  </svg>
+                  <span className="h-display" style={{ fontSize: 38 }}>{p.initialer}</span>
+                </div>
+                <h3 className="h-display h3">{p.namn}</h3>
+                <p className="ember" style={{ fontWeight: 600, margin: "8px 0 4px" }}>{p.roll}</p>
+                <p className="small muted">{p.ar}</p>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
+      </section>
 
-        {/* CTA */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} style={{ display: "flex", gap: "16px" }}>
-          <Link href="/#boka" style={{ textDecoration: "none" }}>
-            <motion.div whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(220,50,30,0.4)" }} whileTap={{ scale: 0.97 }}
-              style={{ background: "rgba(220,50,30,0.9)", color: "#fff", padding: "16px 36px", borderRadius: "6px", fontSize: "14px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
-            >Boka tid →</motion.div>
-          </Link>
-          <Link href="/kontakt" style={{ textDecoration: "none" }}>
-            <motion.div whileHover={{ scale: 1.02 }}
-              style={{ border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)", padding: "16px 36px", borderRadius: "6px", fontSize: "14px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
-            >Kontakta oss</motion.div>
-          </Link>
-        </motion.div>
-      </div>
+      <section className="section">
+        <div className="wrap">
+          <div className="cta-band reveal">
+            <h2 className="h-display h2" style={{ marginBottom: 14 }}>Kom förbi. <span className="ember-grad">Kaffet är på.</span></h2>
+            <p className="lead" style={{ marginBottom: 28 }}>{FORETAG.adress}</p>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <Link href="/#boka" className="btn btn-primary">Boka tid <IconArrow /></Link>
+              <Link href="/kontakt" className="btn btn-ghost">Kontakta oss</Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
