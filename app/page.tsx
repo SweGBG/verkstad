@@ -5,6 +5,7 @@ import ServiceCard from "./components/service-card";
 import BookingForm from "./components/bookingform";
 import Counter from "./components/counter";
 import OpenStatus from "./components/open-status";
+import TireSplit from "./components/tire-split";
 import { TireArt } from "./components/logo";
 import { IconArrow, IconClock, IconPhone, IconPin, IconStar } from "./components/icons";
 
@@ -52,6 +53,9 @@ export default function Hem() {
           ))}
         </div>
       </div>
+
+      {/* ============ DÄCK SOM RULLAR ISÄR ============ */}
+      <TireSplit />
 
       {/* ============ STATS ============ */}
       <section className="section-tight">

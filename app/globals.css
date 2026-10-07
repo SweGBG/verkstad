@@ -526,6 +526,73 @@ textarea.input { resize: vertical; min-height: 140px; }
 .map-pin { position: absolute; left: 56%; top: 66%; transform: translate(-50%, -100%); color: var(--ember-2); filter: drop-shadow(0 6px 14px rgba(226, 64, 31, 0.6)); animation: bob 2.4s ease-in-out infinite; }
 .map-pin::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 26px; height: 8px; border-radius: 50%; transform: translateX(-50%); background: rgba(226, 64, 31, 0.35); animation: ripple 2.4s ease-out infinite; }
 
+
+/* ---------- Däck som rullar isär (scroll) ---------- */
+.tsplit { --e: 0; --spark: 0; --c: 0; --hint: 1; position: relative; height: 300vh; background: radial-gradient(1200px 600px at 50% 60%, #151517 0%, var(--bg) 70%); }
+.tsplit-stage {
+  --size: min(36vw, 500px); --dist: min(33vw, 520px); --start: calc(var(--size) * 0.1); --ty: 0px;
+  position: sticky; top: 0; height: 100svh; overflow: hidden; isolation: isolate;
+}
+.tsplit-word {
+  position: absolute; inset: 0; z-index: -1; display: flex; flex-direction: column; justify-content: center; gap: 2vh;
+  font-family: var(--display); font-weight: 900; text-transform: uppercase; line-height: 0.82; font-size: clamp(90px, 19vw, 300px);
+  color: transparent; -webkit-text-stroke: 1px rgba(243, 239, 233, 0.07); white-space: nowrap; pointer-events: none; user-select: none;
+}
+.tsplit-word span:first-child { transform: translateX(calc(4vw - var(--e) * 14vw)); }
+.tsplit-word span:last-child { text-align: right; transform: translateX(calc(-4vw + var(--e) * 14vw)); -webkit-text-stroke-color: rgba(255, 107, 44, 0.12); }
+.tire {
+  --side: 1; position: absolute; left: 50%; top: 50%; width: var(--size); aspect-ratio: 1;
+  transform: translate(-50%, -50%) translate(calc(var(--side) * (var(--start) + var(--e) * var(--dist))), calc(var(--e) * var(--ty)));
+  will-change: transform;
+}
+.tire-l { --side: -1; z-index: 3; }
+.tire-r { z-index: 2; }
+.tire-r .tire-spin { scale: calc(0.93 + var(--e) * 0.07); filter: brightness(calc(0.7 + var(--e) * 0.3)); }
+.tire-spin { position: absolute; inset: 0; transform: rotate(calc(var(--side) * var(--e) * 0.62turn)); will-change: transform; filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.6)); }
+.tire-spin img { object-fit: contain; }
+.tire-shadow {
+  position: absolute; left: 10%; right: 10%; bottom: -5%; height: 9%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75), transparent); filter: blur(6px);
+}
+.tire-label {
+  position: absolute; left: 50%; bottom: -14%; transform: translate(-50%, calc((1 - var(--c)) * 14px)); opacity: var(--c);
+  font-size: 12px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim); white-space: nowrap;
+}
+.tire-r .tire-label { color: var(--amber); }
+.tire-l .tire-label { color: #8cc8ff; }
+.tsplit-spark {
+  position: absolute; left: 50%; top: 50%; width: 46vmin; height: 46vmin; z-index: 4; pointer-events: none;
+  transform: translate(-50%, calc(-50% + var(--e) * var(--ty))) scale(calc(0.4 + var(--spark) * 0.9)); opacity: var(--spark);
+  background:
+    radial-gradient(closest-side, rgba(255, 230, 190, 0.95), rgba(255, 140, 50, 0.55) 22%, rgba(226, 64, 31, 0.18) 50%, transparent 72%),
+    conic-gradient(from 0deg, transparent 0 8deg, rgba(255, 173, 74, 0.55) 9deg 10deg, transparent 11deg 40deg, rgba(255, 173, 74, 0.45) 41deg 42deg, transparent 43deg 95deg, rgba(255, 173, 74, 0.5) 96deg 97deg, transparent 98deg 150deg, rgba(255, 173, 74, 0.45) 151deg 152deg, transparent 153deg 220deg, rgba(255, 173, 74, 0.5) 221deg 222deg, transparent 223deg 290deg, rgba(255, 173, 74, 0.45) 291deg 292deg, transparent 293deg);
+  mask: radial-gradient(closest-side, #000 40%, transparent 100%);
+  mix-blend-mode: screen; border-radius: 50%;
+}
+.tsplit-copy {
+  position: absolute; left: 50%; top: 50%; z-index: 5; width: min(420px, 29vw); text-align: center;
+  transform: translate(-50%, calc(-50% + (1 - var(--c)) * 34px)); opacity: var(--c); pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.tsplit.copy-on .tsplit-copy { pointer-events: auto; }
+.tsplit-copy h2 { font-size: clamp(40px, 4.6vw, 70px); line-height: 0.92; }
+.tsplit-copy p { font-size: 15.5px; }
+.tsplit-copy .eyebrow::after { content: ""; width: 36px; height: 2px; background: linear-gradient(90deg, var(--ember-2), var(--ember)); box-shadow: 0 0 12px var(--ember); }
+.tsplit-ctas { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+.tsplit-hint {
+  position: absolute; left: 50%; bottom: 5svh; transform: translateX(-50%); opacity: var(--hint); z-index: 6;
+  font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mute); display: flex; flex-direction: column; align-items: center; gap: 12px; white-space: nowrap;
+}
+.tsplit-hint::after { content: ""; width: 1px; height: 46px; background: linear-gradient(var(--ember-2), transparent); animation: drip 2.2s ease-in-out infinite; }
+@media (max-width: 900px) {
+  .tsplit-stage { --size: min(64vw, 380px); --dist: min(30vw, 250px); --ty: -17svh; }
+  .tsplit-copy { top: auto; bottom: 6svh; width: min(92vw, 440px); transform: translate(-50%, calc((1 - var(--c)) * 34px)); gap: 12px; }
+  .tsplit-copy h2 { font-size: clamp(38px, 11vw, 56px); }
+  .tsplit-copy p { font-size: 14.5px; }
+  .tire-label { bottom: -11%; }
+  .tsplit-word { justify-content: flex-start; padding-top: 14svh; }
+}
+
 /* ---------- Keyframes ---------- */
 @keyframes kenburns { from { transform: scale(1.04) translate(0, 0); } to { transform: scale(1.14) translate(-1.5%, -1%); } }
 @keyframes breathe { 0%, 100% { opacity: 0.65; transform: translateX(-50%) scale(1); } 50% { opacity: 1; transform: translateX(-50%) scale(1.08); } }
