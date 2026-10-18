@@ -4,11 +4,10 @@ import { FAQ, FORETAG, OMDOMEN, STATS, STEG, TJANSTER } from "./lib/data";
 import ServiceCard from "./components/service-card";
 import BookingForm from "./components/bookingform";
 import Counter from "./components/counter";
-import OpenStatus from "./components/open-status";
 import TireSplit from "./components/tire-split";
 import CrintroLoader from "./components/crintro-loader";
-import { TireArt } from "./components/logo";
-import { IconArrow, IconClock, IconPhone, IconPin, IconStar } from "./components/icons";
+import FilmHero from "./components/film-hero";
+import { IconArrow, IconClock, IconPhone, IconStar } from "./components/icons";
 
 const MARQUEE = ["Däckbyte 30 min", "Däckhotell", "Hjulinställning", "Oljebyte", "Bromskontroll", "Gratis lufttryck"];
 
@@ -16,36 +15,8 @@ export default function Hem() {
   return (
     <main>
       <CrintroLoader />
-      {/* ============ HERO ============ */}
-      <section className="hero" data-crintro-hold>
-        <div className="hero-media">
-          <Image src="/images/hero-2.webp" alt="Nytt vinterdäck på svart fälg i IronDäcks verkstad, bil på glödande lyft i bakgrunden" fill priority quality={88} sizes="100vw" data-crintro />
-        </div>
-        <div className="hero-glow" />
-        <div className="hero-shade" />
-        <TireArt className="hero-tire" />
-
-        <div className="wrap hero-content">
-          <span className="eyebrow hero-eyebrow">Däckverkstad · {FORETAG.ort}</span>
-          <h1 className="h-display h1">
-            <span className="line"><span style={{ ["--d" as string]: "0.15s" }}>Säkra däck.</span></span>
-            <span className="line"><span className="ember-grad" style={{ ["--d" as string]: "0.3s" }}>Varje säsong.</span></span>
-          </h1>
-          <p className="lead">
-            Däckbyte på 30 minuter, klimatsäkrat däckhotell och service du kan lita på. Boka online — vi har lyften varm.
-          </p>
-          <div className="hero-ctas">
-            <Link href="#boka" className="btn btn-primary">Boka däckbyte <IconArrow /></Link>
-            <Link href="#tjanster" className="btn btn-ghost">Se tjänster & priser</Link>
-          </div>
-          <div className="hero-meta">
-            <OpenStatus />
-            <div><IconPin size={16} /> Hisingsbacka, {FORETAG.ort}</div>
-            <div><span style={{ color: "var(--amber)", display: "inline-flex" }}><IconStar /></span> 4,9 på Google</div>
-          </div>
-        </div>
-        <div className="scroll-cue">Scrolla</div>
-      </section>
+      {/* ============ HERO: scrollfilm (H3) ============ */}
+      <FilmHero />
 
       {/* ============ LÖPBAND ============ */}
       <div className="marquee" aria-hidden="true">

@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { crintro } from "../lib/crintro";
+import { crintro, nearestFrame } from "../lib/crintro";
 import { LogoMark } from "./logo";
 import styles from "./crintro-loader.module.css";
 
 /*
  * CRiNTRO Loader: the IronDäck wheel spins up, the name slams in letter by letter and the tread
- * strip is the real loading bar (hero photo + font). It never runs ahead of its own animation, so
+ * strip is the real loading bar for the H3 scroll film (mp4 on desktop, image sequence on phones). It never runs ahead of its own animation, so
  * with a warm cache it looks like a plain 1.9 s intro; on a slow line it waits (at most MAX), then
  * the curtain lifts and the hero's own entrance plays (html.crintro-wait holds it until then).
  */
@@ -43,7 +43,7 @@ export default function CrintroLoader() {
       raf = 0,
       last = t0,
       done = false;
-    const ready = () => store.crit >= 1;
+    const ready = () => store.crit >= 1 && (store.mode !== "frames" || !!nearestFrame(0));
     const tick = (now: number) => {
       const s = (now - t0) / 1000;
       const dt = Math.min(0.1, (now - last) / 1000);
