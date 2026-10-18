@@ -123,7 +123,7 @@ export default function FilmHero() {
       const p = clamp(cur);
 
       // the film slowly settles: starts slightly zoomed, ends at rest
-      if (media.current) put(media.current, "transform", `scale(${(1.1 - 0.1 * p).toFixed(4)})`);
+      if (media.current) put(media.current, "transform", `scale(${(1.05 - 0.05 * p).toFixed(4)})`);
 
       // winter arrives with the scroll: +12 °C → −6 °C over the first two chapters
       const deg = Math.round(T_FROM + (T_TO - T_FROM) * ease(clamp((p - 0.06) / 0.5)));
