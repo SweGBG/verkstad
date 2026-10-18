@@ -675,3 +675,8 @@ textarea.input { resize: vertical; min-height: 140px; }
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* CRiNTRO Loader: while the loader is up, the hero's entrance waits and the page holds still */
+html.crintro-wait { overflow: hidden; }
+html.crintro-wait [data-crintro-hold], html.crintro-wait [data-crintro-hold] * { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: reduce) { html.crintro-wait { overflow: auto; } }

@@ -68,7 +68,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={`nav ${scrolled || menu ? "scrolled" : ""}`}>
+      <nav className={`nav ${scrolled || menu ? "scrolled" : ""}`} data-crintro-hold>
         <div className="wrap nav-inner">
           <Link href="/" className="logo" aria-label={`${FORETAG.namn} — startsida`}>
             <LogoMark />

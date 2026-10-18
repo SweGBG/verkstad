@@ -1,0 +1,171 @@
+/* CRiNTRO Loader — IronDäck: the wheel spins up, the name slams in, a tread strip glows ember as it loads */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(60% 45% at 50% 100%, rgba(226, 64, 31, 0.16), transparent 70%),
+    radial-gradient(40% 30% at 50% 42%, rgba(255, 107, 44, 0.06), transparent 70%),
+    var(--bg);
+  transition: clip-path 0.95s var(--ease), visibility 0s 1s;
+  clip-path: inset(0 0 0 0);
+}
+.out {
+  clip-path: inset(0 0 100% 0);
+  visibility: hidden;
+  pointer-events: none;
+}
+.inner {
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+  padding: 0 1.25rem;
+  text-align: center;
+}
+
+/* the logo wheel: spins up fast, then rolls to a stop like a balanced wheel */
+.wheel {
+  display: block;
+  width: clamp(54px, 7vw, 74px);
+  aspect-ratio: 1;
+  opacity: 0;
+  animation: wheelIn 1.7s cubic-bezier(0.12, 0.8, 0.2, 1) forwards;
+}
+.mark {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 0 14px rgba(255, 107, 44, 0.35));
+}
+@keyframes wheelIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-46px) rotate(-540deg) scale(0.86);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.word {
+  display: flex;
+  gap: 0;
+  font: 900 clamp(3.4rem, 13vw, 7.6rem) / 0.86 var(--display);
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+}
+.word span {
+  display: inline-flex;
+}
+.word i {
+  font-style: normal;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(0.5em) skewX(-8deg);
+  animation: slam 0.7s var(--ease) forwards;
+}
+.accent i {
+  background: linear-gradient(180deg, #ffd29a 0%, var(--amber) 22%, var(--ember-2) 60%, var(--ember) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@keyframes slam {
+  60% {
+    opacity: 1;
+    transform: translateY(-0.04em) skewX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* the tread strip = real loading */
+.track {
+  container-type: inline-size;
+  position: relative;
+  width: min(17rem, 64vw);
+  height: 8px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(115deg, transparent 0 7px, rgba(255, 255, 255, 0.07) 7px 11px), rgba(255, 255, 255, 0.04);
+  overflow: visible;
+}
+.fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  will-change: transform;
+  background:
+    repeating-linear-gradient(115deg, transparent 0 7px, rgba(10, 10, 11, 0.55) 7px 11px),
+    linear-gradient(90deg, #5a1408, var(--ember) 35%, var(--ember-2) 70%, var(--amber));
+  box-shadow: 0 0 14px rgba(226, 64, 31, 0.5);
+}
+.tip {
+  position: absolute;
+  left: -7px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform;
+  background: radial-gradient(circle, #fff4e0 0 24%, rgba(255, 173, 74, 0.9) 42%, rgba(226, 64, 31, 0) 72%);
+  transition: opacity 0.3s;
+}
+/* still loading on a slow line: the tread rolls and the spark breathes */
+.wait .fill {
+  animation: roll 0.9s linear infinite;
+}
+.wait .tip {
+  animation: breathe 1s ease-in-out infinite;
+}
+@keyframes roll {
+  to {
+    background-position: 22px 0, 0 0;
+  }
+}
+@keyframes breathe {
+  50% {
+    scale: 1.7;
+  }
+}
+
+.sub {
+  font: 700 0.78rem/1 var(--body);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--mute);
+  opacity: 0;
+  animation: subIn 0.8s 1s var(--ease) forwards;
+}
+@keyframes subIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 820px) {
+  .mark {
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loader {
+    display: none;
+  }
+}

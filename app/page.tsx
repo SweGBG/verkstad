@@ -6,6 +6,7 @@ import BookingForm from "./components/bookingform";
 import Counter from "./components/counter";
 import OpenStatus from "./components/open-status";
 import TireSplit from "./components/tire-split";
+import CrintroLoader from "./components/crintro-loader";
 import { TireArt } from "./components/logo";
 import { IconArrow, IconClock, IconPhone, IconPin, IconStar } from "./components/icons";
 
@@ -14,10 +15,11 @@ const MARQUEE = ["Däckbyte 30 min", "Däckhotell", "Hjulinställning", "Oljebyt
 export default function Hem() {
   return (
     <main>
+      <CrintroLoader />
       {/* ============ HERO ============ */}
-      <section className="hero">
+      <section className="hero" data-crintro-hold>
         <div className="hero-media">
-          <Image src="/images/hero.webp" alt="Bil på en glödande lyft i IronDäcks verkstad i skymningen" fill priority sizes="100vw" />
+          <Image src="/images/hero-2.webp" alt="Nytt vinterdäck på svart fälg i IronDäcks verkstad, bil på glödande lyft i bakgrunden" fill priority quality={88} sizes="100vw" data-crintro />
         </div>
         <div className="hero-glow" />
         <div className="hero-shade" />

@@ -11,6 +11,8 @@ export default function RevealObserver() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // pages without the CRiNTRO Loader must not stay held
+    if (!document.querySelector(".crintro-loader")) document.documentElement.classList.remove("crintro-wait");
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {

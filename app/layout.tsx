@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "IronDäck — Däckverkstad i Göteborg",
     description: "Däckbyte, däckhotell och service. Boka tid online på under en minut.",
-    images: ["/images/hero.webp"],
+    images: ["/images/hero-2.webp"],
     locale: "sv_SE",
     type: "website",
   },
@@ -40,8 +40,11 @@ export const viewport: Viewport = { themeColor: "#0a0a0b" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="sv" className={`${display.variable} ${body.variable}`}>
+    <html lang="sv" className={`${display.variable} ${body.variable} crintro-wait`} suppressHydrationWarning>
       <body>
+        <noscript>
+          <style>{`.crintro-loader{display:none!important}html.crintro-wait{overflow:auto}html.crintro-wait [data-crintro-hold],html.crintro-wait [data-crintro-hold] *{animation-play-state:running!important}`}</style>
+        </noscript>
         <Navbar />
         {children}
         <Footer />
