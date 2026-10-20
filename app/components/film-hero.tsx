@@ -4,6 +4,7 @@ import Link from "next/link";
 import { crintro, nearestFrame, onCrintro, wantFrame, PHONE_QUERY } from "../lib/crintro";
 import { FORETAG } from "../lib/data";
 import OpenStatus from "./open-status";
+import BrandReveal from "./brand-reveal";
 import { IconArrow, IconPin, IconStar } from "./icons";
 import styles from "./film-hero.module.css";
 
@@ -14,6 +15,10 @@ import styles from "./film-hero.module.css";
  * The CRiNTRO Loader (app/lib/crintro.ts) loads the film while the intro plays: desktop gets the
  * mp4 as a local blob, phones get a streamed image sequence. If neither loads, real photos
  * crossfade with a slow push-in.
+ *
+ * The film ends at FILM_END of the scroll. After that the last frame holds while the IronDäck mark
+ * is forged on top (BrandReveal, driven by --b), and it stays fully formed for the last stretch
+ * so the hero settles on the brand before the page lets go.
  */
 const POSTER = "/video/irondack-poster.webp";
 const PHOTOS = ["/images/hero-2.webp", "/images/tire-winter.webp", "/images/mount.webp", "/images/hero-2.webp"];
@@ -25,14 +30,19 @@ const CHAPTERS = [
   { n: "04", name: "Klart", h: "Klart på 30 minuter.", p: "Däckbyte, balansering och klimatsäkrat däckhotell. Du får ett sms när bilen är redo." },
 ];
 
-/** Scroll ranges (0–1) for the intro and the four chapters: [in, full, hold, out] */
+/** Where the film ends (0–1 of the hero's scroll); the rest is the brand reveal and the hold. */
+const FILM_END = 0.82;
+/** Brand reveal: starts just before the film ends, fully forged here, then holds to the end. */
+const BRAND: [number, number] = [0.79, 0.93];
+
+/** Scroll ranges (0–1 of the FILM, not the whole hero) for the intro and the four chapters: [in, full, hold, out] */
 type R = [number, number, number, number];
 const INTRO: R = [-1, 0, 0.05, 0.12];
 const CH: R[] = [
   [0.1, 0.14, 0.2, 0.25],
   [0.29, 0.33, 0.45, 0.5],
   [0.54, 0.58, 0.7, 0.75],
-  [0.84, 0.9, 2, 2],
+  [0.84, 0.9, 0.95, 1],
 ];
 const SPAN: [number, number][] = [[0, 0.27], [0.27, 0.52], [0.52, 0.8], [0.8, 1]];
 
@@ -57,6 +67,8 @@ export default function FilmHero() {
   const gauge = useRef<HTMLDivElement>(null);
   const hud = useRef<HTMLDivElement>(null);
   const frost = useRef<HTMLDivElement>(null);
+  const brand = useRef<HTMLDivElement>(null);
+  const navEl = useRef<HTMLElement>(null);
   const [mode, setMode] = useState<Mode | null>(null);
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [active, setActive] = useState(-1);
@@ -80,6 +92,7 @@ export default function FilmHero() {
     const lite = window.matchMedia(PHONE_QUERY).matches;
     let target = 0, cur = 0, raf = 0, lastSeek = 0, lastActive = -2, lastTemp = 99, last = performance.now();
     let lastImg: CanvasImageSource | null = null;
+    let lastBrand = -1;
     // Only touch the DOM when a value really changed (saves style recalculation every frame).
     const put = (node: HTMLElement, prop: string, val: string) => {
       const box = node as HTMLElement & { _c?: Record<string, string> };
@@ -120,7 +133,18 @@ export default function FilmHero() {
       // glide toward the scroll position at the same speed on 60 and 120 Hz screens
       cur += (target - cur) * (reduce ? 1 : 1 - Math.pow(0.9, dt * 60));
       if (Math.abs(target - cur) < 0.00005) cur = target;
-      const p = clamp(cur);
+      const raw = clamp(cur);
+      // p = position in the FILM; it stops at 1 and the last frame holds while the brand is forged
+      const p = clamp(raw / FILM_END);
+      const b = +clamp((raw - BRAND[0]) / (BRAND[1] - BRAND[0])).toFixed(3);
+      if (b !== lastBrand && brand.current) {
+        lastBrand = b;
+        const br = brand.current;
+        br.style.setProperty("--b", String(b));
+        br.toggleAttribute("data-on", b > 0);
+        br.toggleAttribute("data-done", b >= 1);
+      }
+      const fade = 1 - clamp(b / 0.3);
 
       // the film slowly settles: starts slightly zoomed, ends at rest
       if (media.current) put(media.current, "transform", `scale(${(1.05 - 0.05 * p).toFixed(4)})`);
@@ -134,7 +158,7 @@ export default function FilmHero() {
         hud.current?.classList.toggle(styles.winter, deg <= T_WINTER);
       }
       // the HUD takes over once the intro has faded (they share the bottom-left corner)
-      if (hud.current) put(hud.current, "opacity", clamp((p - 0.05) / 0.07).toFixed(3));
+      if (hud.current) put(hud.current, "opacity", (clamp((p - 0.05) / 0.07) * fade).toFixed(3));
       // a cold blue breath over the floor while it's freezing (chapter 2–3)
       if (frost.current) put(frost.current, "opacity", (vis(p, [0.24, 0.36, 0.56, 0.7]) * 0.9).toFixed(3));
 
@@ -153,6 +177,8 @@ export default function FilmHero() {
         if (!lite) put(l, "filter", o < 1 ? `blur(${((1 - o) * 6).toFixed(1)}px)` : "none");
         put(l, "visibility", o > 0.01 ? "visible" : "hidden");
       });
+      // the chapter navigator steps back while the brand takes the stage
+      if (navEl.current) put(navEl.current, "opacity", (0.25 + 0.75 * fade).toFixed(3));
       segs.current.forEach((s, i) => {
         if (!s) return;
         const [a, b] = SPAN[i];
@@ -205,7 +231,7 @@ export default function FilmHero() {
   const jump = (i: number) => {
     const el = root.current;
     if (!el) return;
-    const p = CH[i][1] + 0.02;
+    const p = (CH[i][1] + 0.02) * FILM_END;
     window.scrollTo({ top: el.offsetTop + p * (el.offsetHeight - window.innerHeight), behavior: "smooth" });
   };
 
@@ -276,7 +302,9 @@ export default function FilmHero() {
           <div className={styles.gauge} ref={gauge}><i /></div>
         </div>
 
-        <nav className={styles.nav} aria-label="Kapitel">
+        <BrandReveal ref={brand} />
+
+        <nav className={styles.nav} aria-label="Kapitel" ref={navEl}>
           {CHAPTERS.map((c, i) => (
             <button key={c.n} className={active === i ? styles.on : ""} onClick={() => jump(i)} ref={(n) => { segs.current[i] = n; }}>
               <span className={styles.seg}><i /></span>
